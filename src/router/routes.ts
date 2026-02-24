@@ -8,8 +8,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: '',
         name: 'login',
-        component: () =>
-          import('src/modules/auth/pages/LoginPage.vue')
+        component: () => import('src/modules/auth/pages/LoginPage.vue')
       }
     ]
   },
@@ -21,30 +20,44 @@ const routes: RouteRecordRaw[] = [
       {
         path: '',
         name: 'register',
-        component: () =>
-          import('src/modules/auth/pages/RegisterPage.vue')
+        component: () => import('src/modules/auth/pages/RegisterPage.vue')
+      }
+    ]
+  },
+
+  {
+    path: '/home',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: '',
+        name: 'home',
+        component: () => import('src/modules/home/pages/HomePage.vue')
+      }
+    ]
+  },
+
+  {
+    path: '/trades',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: '',
+        name: 'trades',
+        component: () => import('src/modules/trades/pages/TradesPage.vue')
       }
     ]
   },
 
   {
     path: '/',
-    component: () => import('layouts/MainLayout.vue'),
-    children: [
-      {
-        path: '',
-        name: 'home',
-        component: () =>
-          import('src/modules/home/pages/HomePage.vue')
-      }
-    ]
+    redirect: { name: 'home' }
   },
 
   {
     path: '/:catchAll(.*)*',
     name: 'error-404',
-    component: () =>
-      import('src/modules/core/pages/ErrorPage.vue')
+    component: () => import('src/modules/core/pages/ErrorPage.vue')
   }
 ]
 
