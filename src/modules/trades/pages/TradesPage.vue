@@ -1,23 +1,45 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { getTrades } from '../services/trade.service'
-import type { Trade } from '../types/trade.types'
+import { getTrades, mapTradeToCardModel } from '../services/trade.service'
+import TradeCard from '../components/TradeCard.vue'
+import type { TradeCardModel } from '../types/trade-card.model'
 
-const trades = ref<Trade[]>([])
+const trades = ref<TradeCardModel[]>([])
 const loading = ref(false)
 const error = ref('')
+const page = ref(1)
+const rpp = 10
+const hasMore = ref(false)
 
-onMounted(async () => {
+async function fetchTrades() {
   try {
     loading.value = true
-    const response = await getTrades()
-    trades.value = response.list
+
+    const response = await getTrades(page.value, rpp)
+
+    const mapped = response.list.map(mapTradeToCardModel)
+
+    if (page.value === 1) {
+      trades.value = mapped
+    } else {
+      trades.value.push(...mapped)
+    }
+
+    hasMore.value = response.more
+
   } catch {
     error.value = 'Erro ao carregar trades'
   } finally {
     loading.value = false
   }
-})
+}
+
+function loadMore() {
+  page.value++
+  void fetchTrades()
+}
+
+onMounted(fetchTrades)
 </script>
 
 <template>
@@ -32,11 +54,11 @@ onMounted(async () => {
     </div>
 
     <div v-else>
-      <div v-for="trade in trades" :key="trade.id" class="q-mb-md">
-        <div><strong>Usuário:</strong> {{ trade.user.name }}</div>
-        <div><strong>ID:</strong> {{ trade.id }}</div>
-        <hr />
-      </div>
+      <TradeCard v-for="trade in trades" :key="trade.id" :trade="trade" />
+    </div>
+
+    <div v-if="hasMore" class="text-center q-mt-md">
+      <q-btn label="Carregar mais" color="primary" outline @click="loadMore" :loading="loading" />
     </div>
 
   </q-page>
