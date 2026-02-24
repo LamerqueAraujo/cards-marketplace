@@ -50,6 +50,18 @@ const routes: RouteRecordRaw[] = [
   },
 
   {
+    path: '/my-cards',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: '',
+        name: 'my-cards',
+        component: () => import('src/modules/cards/pages/MyCardsPage.vue')
+      }
+    ]
+  },
+
+  {
     path: '/',
     redirect: { name: 'home' }
   },
