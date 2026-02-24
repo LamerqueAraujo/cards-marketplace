@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { login } from '../services/auth.service'
+import { useAuthStore } from '../store/auth.store'
 
 const router = useRouter()
 
@@ -9,6 +10,7 @@ const email = ref('')
 const password = ref('')
 const loading = ref(false)
 const errorMessage = ref('')
+const authStore = useAuthStore()
 
 async function onSubmit() {
   try {
@@ -20,7 +22,7 @@ async function onSubmit() {
       password: password.value
     })
 
-    localStorage.setItem('token', response.token)
+    authStore.setToken(response.token)
 
     await router.push({ name: 'home' })
 
