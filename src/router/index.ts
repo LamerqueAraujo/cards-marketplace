@@ -6,6 +6,8 @@ import {
   createWebHistory,
 } from 'vue-router';
 import routes from './routes';
+import { useAuthStore } from 'src/modules/auth/store/auth.store';
+import { storeToRefs } from 'pinia';
 
 /*
  * If not building with SSR mode, you can
@@ -33,5 +35,21 @@ export default defineRouter(function (/* { store, ssrContext } */) {
     history: createHistory(process.env.VUE_ROUTER_BASE),
   });
 
+  Router.beforeEach((to) => {
+    const authStore = useAuthStore()
+    const { isAuthenticated } = storeToRefs(authStore)
+
+    const publicRoutes = ['login', 'register']
+
+    if (!isAuthenticated.value && !publicRoutes.includes(String(to.name))) {
+      return { name: 'login' }
+    }
+
+    if (isAuthenticated.value && publicRoutes.includes(String(to.name))) {
+      return { name: 'home' }
+    }
+  })
+
   return Router;
 });
+
