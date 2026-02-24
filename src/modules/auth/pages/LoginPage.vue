@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { AxiosError } from 'axios'
 import { useRouter } from 'vue-router'
 import { login } from '../services/auth.service'
 
@@ -10,10 +9,6 @@ const email = ref('')
 const password = ref('')
 const loading = ref(false)
 const errorMessage = ref('')
-
-function isAxiosError(error: unknown): error is AxiosError {
-  return typeof error === 'object' && error !== null && 'isAxiosError' in error
-}
 
 async function onSubmit() {
   try {
@@ -29,8 +24,8 @@ async function onSubmit() {
 
     await router.push({ name: 'home' })
 
-  } catch (err: unknown) {
-    if (isAxiosError(err) && err.response?.status === 401) {
+  } catch (error: unknown) {
+    if (error instanceof Error && error.message === 'INVALID_CREDENTIALS') {
       errorMessage.value = 'Email ou senha inválidos'
     } else {
       errorMessage.value = 'Erro ao fazer login. Tente novamente.'
