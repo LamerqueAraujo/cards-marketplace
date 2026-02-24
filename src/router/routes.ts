@@ -7,7 +7,9 @@ const routes: RouteRecordRaw[] = [
     children: [
       {
         path: '',
-        component: () => import('src/modules/auth/pages/LoginPage.vue')
+        name: 'login',
+        component: () =>
+          import('src/modules/auth/pages/LoginPage.vue')
       }
     ]
   },
@@ -18,14 +20,25 @@ const routes: RouteRecordRaw[] = [
     children: [
       {
         path: '',
-        component: () => import('pages/IndexPage.vue')
+        name: 'home',
+        component: () =>
+          import('src/modules/home/pages/HomePage.vue')
       }
     ]
   },
 
   {
+    path: '/register',
+    name: 'register',
+    component: () =>
+      import('src/modules/auth/pages/RegisterPage.vue')
+  },
+
+  {
     path: '/:catchAll(.*)*',
-    component: () => import('pages/ErrorNotFound.vue')
+    name: 'error-404',
+    component: () =>
+      import('src/modules/core/pages/ErrorPage.vue')
   }
 ]
 
