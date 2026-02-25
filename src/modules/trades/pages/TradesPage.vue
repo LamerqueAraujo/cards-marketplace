@@ -1,12 +1,19 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { getTrades, mapTradeToCardModel, createTrade, deleteTrade } from '../services/trade.service'
+import {
+  getTrades,
+  mapTradeToCardModel,
+  createTrade,
+  deleteTrade
+} from '../services/trade.service'
 import TradeCard from '../components/TradeCard.vue'
 import type { TradeCardModel } from '../types/trade-card.model'
 import type { UserCard } from 'src/modules/cards/types/cards.types'
 import { getCards, getMyCards } from 'src/modules/cards/services/cards.service'
 import { toggleSelection } from 'src/shared/utils/selection.utils'
 import type { GetCardsResponse } from 'src/modules/cards/types/cards.response'
+import LoadingSkeleton from 'src/shared/components/ui/LoadingSkeleton.vue'
+import EmptyState from 'src/shared/components/ui/EmptyState.vue'
 
 const trades = ref<TradeCardModel[]>([])
 const loading = ref(false)
@@ -15,14 +22,18 @@ const page = ref(1)
 const rpp = 10
 const hasMore = ref(false)
 const showCreateTradeDialog = ref(false)
+
 const myCards = ref<UserCard[]>([])
 const loadingMyCards = ref(false)
 const myCardsError = ref('')
-const selectedOfferingIds = ref<string[]>([])
+
 const availableCards = ref<UserCard[]>([])
 const loadingAvailable = ref(false)
 const availableError = ref('')
+
+const selectedOfferingIds = ref<string[]>([])
 const selectedReceivingIds = ref<string[]>([])
+
 const creatingTrade = ref(false)
 
 async function fetchTrades() {
@@ -39,7 +50,6 @@ async function fetchTrades() {
     }
 
     hasMore.value = response.more
-
   } catch {
     error.value = 'Erro ao carregar trades'
   } finally {
@@ -69,7 +79,6 @@ async function fetchMyCardsForTrade() {
 
     const response = await getMyCards()
     myCards.value = response
-
   } catch {
     myCardsError.value = 'Erro ao carregar suas cartas'
   } finally {
@@ -84,7 +93,6 @@ async function fetchAvailableCardsForTrade() {
 
     const response: GetCardsResponse = await getCards()
     availableCards.value = response.list
-
   } catch {
     availableError.value = 'Erro ao carregar cartas disponíveis'
   } finally {
@@ -131,17 +139,14 @@ async function handleCreateTrade() {
     creatingTrade.value = true
 
     const payload = buildTradePayload()
-
     await createTrade(payload)
 
     showCreateTradeDialog.value = false
-
     selectedOfferingIds.value = []
     selectedReceivingIds.value = []
 
     page.value = 1
     await fetchTrades()
-
   } catch {
     console.error('Erro ao criar trade')
   } finally {
@@ -151,14 +156,11 @@ async function handleCreateTrade() {
 
 async function handleDeleteTrade(tradeId: string) {
   const confirmed = confirm('Deseja cancelar esta troca?')
-
   if (!confirmed) return
 
   try {
     await deleteTrade(tradeId)
-
     trades.value = trades.value.filter(t => t.id !== tradeId)
-
   } catch {
     console.error('Erro ao deletar trade')
   }
@@ -170,6 +172,7 @@ onMounted(fetchTrades)
 <template>
   <q-page class="q-pa-md">
 
+    <!-- Header -->
     <div class="row justify-between items-center q-mb-md">
       <div class="text-h6">
         Trocas
@@ -178,24 +181,31 @@ onMounted(fetchTrades)
       <q-btn label="Criar troca" color="primary" icon="add" @click="openCreateTradeDialog" />
     </div>
 
-    <div v-if="loading">
-      Carregando...
-    </div>
+    <!-- Loading -->
+    <LoadingSkeleton v-if="loading" type="list" />
 
+    <!-- Error -->
     <div v-else-if="error">
       {{ error }}
     </div>
 
+    <!-- Empty -->
+    <EmptyState v-else-if="trades.length === 0" icon="swap_horiz" title="Nenhuma troca disponível"
+      description="Seja o primeiro a criar uma troca." />
+
+    <!-- Lista -->
     <div v-else>
       <TradeCard v-for="trade in trades" :key="trade.id" :trade="trade" @delete="handleDeleteTrade" />
     </div>
 
+    <!-- Paginação -->
     <div v-if="hasMore" class="text-center q-mt-md">
       <q-btn label="Carregar mais" color="primary" outline @click="loadMore" :loading="loading" />
     </div>
 
+    <!-- Dialog criação de trade -->
     <q-dialog v-model="showCreateTradeDialog">
-      <q-card>
+      <q-card style="min-width: 800px; max-height: 80vh;" class="column">
 
         <q-card-section class="row items-center justify-between">
           <div class="text-h6">
@@ -207,15 +217,14 @@ onMounted(fetchTrades)
 
         <q-separator />
 
-        <q-card-section class="col scroll" style="overflow-y: auto;">
+        <q-card-section class="col scroll">
 
+          <!-- OFFERING -->
           <div class="text-subtitle1 q-mb-md">
             Selecione as cartas que você quer oferecer
           </div>
 
-          <div v-if="loadingMyCards">
-            Carregando suas cartas...
-          </div>
+          <LoadingSkeleton v-if="loadingMyCards" type="grid" />
 
           <div v-else-if="myCardsError">
             {{ myCardsError }}
@@ -229,10 +238,7 @@ onMounted(fetchTrades)
             <div v-for="card in myCards" :key="card.id" class="col-6 col-md-3 cursor-pointer"
               @click="toggleOffering(card.id)">
               <q-img :src="card.imageUrl" ratio="1" />
-
-              <div class="text-caption q-mt-xs">
-                {{ card.name }}
-              </div>
+              <div class="text-caption q-mt-xs">{{ card.name }}</div>
 
               <q-badge v-if="selectedOfferingIds.includes(card.id)" color="primary" class="q-mt-xs">
                 Selecionada
@@ -240,17 +246,14 @@ onMounted(fetchTrades)
             </div>
           </div>
 
-        </q-card-section>
+          <q-separator class="q-my-lg" />
 
-        <q-card-section class="col scroll" style="overflow-y: auto;">
-
+          <!-- RECEIVING -->
           <div class="text-subtitle1 q-mb-md">
             Selecione as cartas que você quer receber
           </div>
 
-          <div v-if="loadingAvailable">
-            Carregando cartas disponíveis...
-          </div>
+          <LoadingSkeleton v-if="loadingAvailable" type="grid" />
 
           <div v-else-if="availableError">
             {{ availableError }}
@@ -260,10 +263,7 @@ onMounted(fetchTrades)
             <div v-for="card in availableCards" :key="card.id" class="col-6 col-md-3 cursor-pointer"
               @click="toggleReceiving(card.id)">
               <q-img :src="card.imageUrl" ratio="1" />
-
-              <div class="text-caption q-mt-xs">
-                {{ card.name }}
-              </div>
+              <div class="text-caption q-mt-xs">{{ card.name }}</div>
 
               <q-badge v-if="selectedReceivingIds.includes(card.id)" color="secondary" class="q-mt-xs">
                 Selecionada
@@ -273,12 +273,13 @@ onMounted(fetchTrades)
 
         </q-card-section>
 
-        <q-separator class="q-my-md" />
-
-        <q-btn label="Criar troca" color="primary" :disable="!isTradeValid()" @click="handleCreateTrade" />
+        <q-separator />
 
         <q-card-actions align="right">
           <q-btn flat label="Cancelar" @click="showCreateTradeDialog = false" />
+
+          <q-btn label="Criar troca" color="primary" :disable="!isTradeValid()" :loading="creatingTrade"
+            @click="handleCreateTrade" />
         </q-card-actions>
 
       </q-card>
