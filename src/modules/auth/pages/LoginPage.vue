@@ -24,7 +24,7 @@ async function onSubmit() {
 
     authStore.setToken(response.token, response.user.id)
 
-    await router.push({ name: 'home' })
+    await router.push({ name: 'marketplace' })
 
   } catch (error: unknown) {
     if (error instanceof Error && error.message === 'INVALID_CREDENTIALS') {

@@ -8,7 +8,8 @@ const routes: RouteRecordRaw[] = [
       {
         path: '',
         name: 'login',
-        component: () => import('src/modules/auth/pages/LoginPage.vue')
+        component: () => import('src/modules/auth/pages/LoginPage.vue'),
+        meta: { title: 'Login' }
       }
     ]
   },
@@ -20,31 +21,21 @@ const routes: RouteRecordRaw[] = [
       {
         path: '',
         name: 'register',
-        component: () => import('src/modules/auth/pages/RegisterPage.vue')
+        component: () => import('src/modules/auth/pages/RegisterPage.vue'),
+        meta: { title: 'Cadastro' }
       }
     ]
   },
 
   {
-    path: '/home',
+    path: '/',
     component: () => import('layouts/MainLayout.vue'),
     children: [
       {
         path: '',
-        name: 'home',
-        component: () => import('src/modules/home/pages/HomePage.vue')
-      }
-    ]
-  },
-
-  {
-    path: '/trades',
-    component: () => import('layouts/MainLayout.vue'),
-    children: [
-      {
-        path: '',
-        name: 'trades',
-        component: () => import('src/modules/trades/pages/TradesPage.vue')
+        name: 'marketplace',
+        component: () => import('src/modules/trades/pages/TradesPage.vue'),
+        meta: { title: 'Marketplace' }
       }
     ]
   },
@@ -56,20 +47,17 @@ const routes: RouteRecordRaw[] = [
       {
         path: '',
         name: 'my-cards',
-        component: () => import('src/modules/cards/pages/MyCardsPage.vue')
+        component: () => import('src/modules/cards/pages/MyCardsPage.vue'),
+        meta: { title: 'Meus Cards' }
       }
     ]
   },
 
   {
-    path: '/',
-    redirect: { name: 'home' }
-  },
-
-  {
     path: '/:catchAll(.*)*',
     name: 'error-404',
-    component: () => import('src/modules/core/pages/ErrorPage.vue')
+    component: () => import('src/modules/core/pages/ErrorPage.vue'),
+    meta: { title: 'Página não encontrada' }
   }
 ]
 
