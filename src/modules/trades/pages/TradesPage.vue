@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { getTrades, mapTradeToCardModel, createTrade } from '../services/trade.service'
+import { getTrades, mapTradeToCardModel, createTrade, deleteTrade } from '../services/trade.service'
 import TradeCard from '../components/TradeCard.vue'
 import type { TradeCardModel } from '../types/trade-card.model'
 import type { UserCard } from 'src/modules/cards/types/cards.types'
@@ -149,7 +149,20 @@ async function handleCreateTrade() {
   }
 }
 
+async function handleDeleteTrade(tradeId: string) {
+  const confirmed = confirm('Deseja cancelar esta troca?')
 
+  if (!confirmed) return
+
+  try {
+    await deleteTrade(tradeId)
+
+    trades.value = trades.value.filter(t => t.id !== tradeId)
+
+  } catch {
+    console.error('Erro ao deletar trade')
+  }
+}
 
 onMounted(fetchTrades)
 </script>
@@ -174,7 +187,7 @@ onMounted(fetchTrades)
     </div>
 
     <div v-else>
-      <TradeCard v-for="trade in trades" :key="trade.id" :trade="trade" />
+      <TradeCard v-for="trade in trades" :key="trade.id" :trade="trade" @delete="handleDeleteTrade" />
     </div>
 
     <div v-if="hasMore" class="text-center q-mt-md">

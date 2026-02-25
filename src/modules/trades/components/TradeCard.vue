@@ -1,8 +1,20 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { TradeCardModel } from '../types/trade-card.model'
+import { useAuthStore } from 'src/modules/auth/store/auth.store'
 
-defineProps<{
+const props = defineProps<{
   trade: TradeCardModel
+}>()
+
+const authStore = useAuthStore()
+
+const isOwner = computed(() => {
+  return props.trade.userId === authStore.userId
+})
+
+const emit = defineEmits<{
+  (e: 'delete', tradeId: string): void
 }>()
 </script>
 
@@ -20,6 +32,8 @@ defineProps<{
             {{ new Date(trade.createdAt).toLocaleDateString() }}
           </div>
         </div>
+
+        <q-btn v-if="isOwner" icon="delete" flat round color="negative" @click="emit('delete', trade.id)" />
       </div>
     </q-card-section>
 
