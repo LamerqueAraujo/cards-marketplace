@@ -35,3 +35,10 @@ export function mapTradeToCardModel(trade: Trade): TradeCardModel {
     receiving
   }
 }
+
+export async function createTrade(payload: {
+  cards: { cardId: string; type: 'OFFERING' | 'RECEIVING' }[]
+}) {
+  const { data } = await api.post('/trades', payload)
+  return data
+}
