@@ -22,7 +22,7 @@ async function onSubmit() {
       password: password.value
     })
 
-    authStore.setToken(response.token)
+    authStore.setToken(response.token, response.user.id)
 
     await router.push({ name: 'home' })
 

@@ -1,6 +1,7 @@
 export interface TradeCardModel {
   id: string
   userName: string
+  userId: string
   createdAt: string
   offering: {
     id: string

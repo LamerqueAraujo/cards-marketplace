@@ -30,6 +30,7 @@ export function mapTradeToCardModel(trade: Trade): TradeCardModel {
   return {
     id: trade.id,
     userName: trade.user.name,
+    userId: trade.userId,
     createdAt: trade.createdAt,
     offering,
     receiving
@@ -41,4 +42,8 @@ export async function createTrade(payload: {
 }) {
   const { data } = await api.post('/trades', payload)
   return data
+}
+
+export async function deleteTrade(tradeId: string) {
+  await api.delete(`/trades/${tradeId}`)
 }
