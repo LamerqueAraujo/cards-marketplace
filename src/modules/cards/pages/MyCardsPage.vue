@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { addCardsToUser, getCards, getMyCards } from '../services/cards.service'
 import type { UserCard } from '../types/cards.types'
 import type { GetCardsResponse } from '../types/cards.response'
+import { toggleSelection } from 'src/shared/utils/selection.utils'
 
 const cards = ref<UserCard[]>([])
 const loading = ref(false)
@@ -50,13 +51,8 @@ async function fetchMyCards() {
 }
 
 function toggleCardSelection(cardId: string) {
-  const index = selectedCardIds.value.indexOf(cardId)
-
-  if (index === -1) {
-    selectedCardIds.value.push(cardId)
-  } else {
-    selectedCardIds.value.splice(index, 1)
-  }
+  selectedCardIds.value =
+    toggleSelection(selectedCardIds.value, cardId)
 }
 
 async function handleAddCards() {
