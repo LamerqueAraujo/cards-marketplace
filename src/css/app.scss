@@ -1,1 +1,24 @@
-// app global css in SCSS form
+body {
+  background: #0f0f1a;
+  color: #e5e7eb;
+}
+
+/* Cards */
+.q-card {
+  background: #1a1a2e;
+  border: 1px solid #2e2e4d;
+  border-radius: 14px;
+  box-shadow: 0 0 20px rgba(75, 0, 130, 0.25);
+}
+
+/* Dialog */
+.q-dialog__inner > div {
+  background: #1a1a2e;
+}
+
+/* Botões */
+.q-btn {
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  border-radius: 10px;
+}

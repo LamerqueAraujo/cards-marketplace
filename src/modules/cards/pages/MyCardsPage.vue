@@ -4,6 +4,7 @@ import { addCardsToUser, getCards, getMyCards } from '../services/cards.service'
 import type { UserCard } from '../types/cards.types'
 import type { GetCardsResponse } from '../types/cards.response'
 import { toggleSelection } from 'src/shared/utils/selection.utils'
+import CardThumbnail from 'src/shared/components/ui/CardThumbnail.vue'
 
 const cards = ref<UserCard[]>([])
 const loading = ref(false)
@@ -66,7 +67,7 @@ async function handleAddCards() {
     showAddDialog.value = false
     selectedCardIds.value = []
 
-    await fetchMyCards() // atualiza inventário
+    await fetchMyCards()
 
   } catch {
     availableError.value = 'Erro ao adicionar cartas'
@@ -81,7 +82,8 @@ onMounted(fetchMyCards)
 <template>
   <q-page class="q-pa-md">
 
-    <div class="row justify-between items-center q-mb-md">
+    <!-- HEADER -->
+    <div class="row justify-between items-center q-mb-lg">
       <div class="text-h6">
         Minhas Cartas
       </div>
@@ -89,6 +91,7 @@ onMounted(fetchMyCards)
       <q-btn label="Adicionar cartas" color="primary" icon="add" @click="openAddDialog" />
     </div>
 
+    <!-- STATES -->
     <div v-if="loading">
       Carregando suas cartas...
     </div>
@@ -101,17 +104,17 @@ onMounted(fetchMyCards)
       Você ainda não possui cartas cadastradas.
     </div>
 
-    <div v-else>
-      <div v-for="card in cards" :key="card.id" class="q-mb-md">
-        <q-img :src="card.imageUrl" ratio="1" />
-        <div class="text-subtitle2 q-mt-sm">
-          {{ card.name }}
-        </div>
+    <!-- GRID -->
+    <div v-else class="row q-col-gutter-md">
+      <div v-for="card in cards" :key="card.id" class="col-auto">
+        <CardThumbnail :image-url="card.imageUrl" :name="card.name" />
       </div>
     </div>
 
+    <!-- ADD DIALOG -->
     <q-dialog v-model="showAddDialog">
-      <q-card style="min-width: 500px">
+      <q-card class="add-dialog">
+
         <q-card-section class="row items-center justify-between">
           <div class="text-h6">
             Adicionar cartas
@@ -132,33 +135,32 @@ onMounted(fetchMyCards)
             {{ availableError }}
           </div>
 
-          <div v-else>
-            <div v-for="card in availableCards" :key="card.id" class="q-mb-sm cursor-pointer"
+          <div v-else class="row q-col-gutter-md">
+            <div v-for="card in availableCards" :key="card.id" class="col-auto cursor-pointer"
               @click="toggleCardSelection(card.id)">
-              <q-img :src="card.imageUrl" ratio="1" />
-
-              <div class="text-caption q-mt-xs">
-                {{ card.name }}
-              </div>
-
-              <q-badge v-if="selectedCardIds.includes(card.id)" color="primary" class="q-mt-xs">
-                Selecionada
-              </q-badge>
+              <CardThumbnail :image-url="card.imageUrl" :name="card.name"
+                :selected="selectedCardIds.includes(card.id)" />
             </div>
           </div>
 
         </q-card-section>
 
         <q-card-actions align="right">
-
           <q-btn flat label="Cancelar" @click="showAddDialog = false" />
 
           <q-btn label="Adicionar à minha coleção" color="primary" :disable="selectedCardIds.length === 0"
             :loading="addingCards" @click="handleAddCards" />
-
         </q-card-actions>
+
       </q-card>
     </q-dialog>
 
   </q-page>
 </template>
+
+<style scoped>
+.add-dialog {
+  min-width: 600px;
+  max-width: 900px;
+}
+</style>

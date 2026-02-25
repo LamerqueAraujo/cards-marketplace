@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import {
   getTrades,
   mapTradeToCardModel,
@@ -14,6 +14,7 @@ import { toggleSelection } from 'src/shared/utils/selection.utils'
 import type { GetCardsResponse } from 'src/modules/cards/types/cards.response'
 import LoadingSkeleton from 'src/shared/components/ui/LoadingSkeleton.vue'
 import EmptyState from 'src/shared/components/ui/EmptyState.vue'
+import CardThumbnail from 'src/shared/components/ui/CardThumbnail.vue'
 
 const trades = ref<TradeCardModel[]>([])
 const loading = ref(false)
@@ -22,19 +23,19 @@ const page = ref(1)
 const rpp = 10
 const hasMore = ref(false)
 const showCreateTradeDialog = ref(false)
-
 const myCards = ref<UserCard[]>([])
 const loadingMyCards = ref(false)
 const myCardsError = ref('')
-
 const availableCards = ref<UserCard[]>([])
 const loadingAvailable = ref(false)
 const availableError = ref('')
-
 const selectedOfferingIds = ref<string[]>([])
 const selectedReceivingIds = ref<string[]>([])
-
 const creatingTrade = ref(false)
+const isTradeValid = computed(() =>
+  selectedOfferingIds.value.length > 0 &&
+  selectedReceivingIds.value.length > 0
+)
 
 async function fetchTrades() {
   try {
@@ -125,15 +126,9 @@ function buildTradePayload() {
   return { cards }
 }
 
-function isTradeValid() {
-  return (
-    selectedOfferingIds.value.length > 0 &&
-    selectedReceivingIds.value.length > 0
-  )
-}
 
 async function handleCreateTrade() {
-  if (!isTradeValid()) return
+  if (!isTradeValid.value) return
 
   try {
     creatingTrade.value = true
@@ -205,11 +200,15 @@ onMounted(fetchTrades)
 
     <!-- Dialog criação de trade -->
     <q-dialog v-model="showCreateTradeDialog">
-      <q-card style="min-width: 800px; max-height: 80vh;" class="column">
+      <q-card class="trade-dialog">
 
-        <q-card-section class="row items-center justify-between">
-          <div class="text-h6">
-            Criar nova troca
+        <!-- HEADER -->
+        <q-card-section class="trade-dialog-header">
+          <div>
+            <div class="text-h6">Criar nova troca</div>
+            <div class="text-caption text-grey-5">
+              Escolha cartas para oferecer e receber
+            </div>
           </div>
 
           <q-btn flat round dense icon="close" @click="showCreateTradeDialog = false" />
@@ -217,11 +216,12 @@ onMounted(fetchTrades)
 
         <q-separator />
 
-        <q-card-section class="col scroll">
+        <!-- CONTENT SCROLL -->
+        <q-card-section class="trade-dialog-content">
 
           <!-- OFFERING -->
           <div class="text-subtitle1 q-mb-md">
-            Selecione as cartas que você quer oferecer
+            Suas cartas (oferecendo)
           </div>
 
           <LoadingSkeleton v-if="loadingMyCards" type="grid" />
@@ -234,23 +234,16 @@ onMounted(fetchTrades)
             Você não possui cartas para oferecer.
           </div>
 
-          <div v-else class="row q-col-gutter-md">
-            <div v-for="card in myCards" :key="card.id" class="col-6 col-md-3 cursor-pointer"
-              @click="toggleOffering(card.id)">
-              <q-img :src="card.imageUrl" ratio="1" />
-              <div class="text-caption q-mt-xs">{{ card.name }}</div>
-
-              <q-badge v-if="selectedOfferingIds.includes(card.id)" color="primary" class="q-mt-xs">
-                Selecionada
-              </q-badge>
-            </div>
+          <div v-else class="trade-cards-grid">
+            <CardThumbnail v-for="card in myCards" :key="card.id" :image-url="card.imageUrl" :name="card.name"
+              :selected="selectedOfferingIds.includes(card.id)" @click="toggleOffering(card.id)" />
           </div>
 
           <q-separator class="q-my-lg" />
 
           <!-- RECEIVING -->
           <div class="text-subtitle1 q-mb-md">
-            Selecione as cartas que você quer receber
+            Cartas desejadas (recebendo)
           </div>
 
           <LoadingSkeleton v-if="loadingAvailable" type="grid" />
@@ -259,26 +252,20 @@ onMounted(fetchTrades)
             {{ availableError }}
           </div>
 
-          <div v-else class="row q-col-gutter-md">
-            <div v-for="card in availableCards" :key="card.id" class="col-6 col-md-3 cursor-pointer"
-              @click="toggleReceiving(card.id)">
-              <q-img :src="card.imageUrl" ratio="1" />
-              <div class="text-caption q-mt-xs">{{ card.name }}</div>
-
-              <q-badge v-if="selectedReceivingIds.includes(card.id)" color="secondary" class="q-mt-xs">
-                Selecionada
-              </q-badge>
-            </div>
+          <div v-else class="trade-cards-grid">
+            <CardThumbnail v-for="card in availableCards" :key="card.id" :image-url="card.imageUrl" :name="card.name"
+              :selected="selectedReceivingIds.includes(card.id)" @click="toggleReceiving(card.id)" />
           </div>
 
         </q-card-section>
 
         <q-separator />
 
+        <!-- ACTIONS -->
         <q-card-actions align="right">
           <q-btn flat label="Cancelar" @click="showCreateTradeDialog = false" />
 
-          <q-btn label="Criar troca" color="primary" :disable="!isTradeValid()" :loading="creatingTrade"
+          <q-btn label="Criar troca" color="primary" :disable="!isTradeValid" :loading="creatingTrade"
             @click="handleCreateTrade" />
         </q-card-actions>
 
@@ -287,3 +274,31 @@ onMounted(fetchTrades)
 
   </q-page>
 </template>
+
+<style scoped>
+.trade-dialog {
+  width: 900px;
+  max-width: 92vw;
+  height: 80vh;
+  display: flex;
+  flex-direction: column;
+  background: #1a1a2e;
+}
+
+.trade-dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.trade-dialog-content {
+  overflow-y: auto;
+  padding: 12px 4px 0;
+}
+
+.trade-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 14px;
+}
+</style>
