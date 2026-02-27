@@ -3,10 +3,13 @@ import type { UserCard } from '../types/cards.types'
 import type { GetCardsResponse } from '../types/cards.response'
 
 export async function getMyCards(): Promise<UserCard[]> {
-  const { data } = await api.get<UserCard[]>('/me/cards')
-  console.log(data);
-
-  return data
+  try {
+    const { data } = await api.get('/me')
+    return data.cards ?? []
+  } catch (error) {
+    console.error('Erro ao buscar cartas do usuário', error)
+    throw error
+  }
 }
 
 export async function getCards(
