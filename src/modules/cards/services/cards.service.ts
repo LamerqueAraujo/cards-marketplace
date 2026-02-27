@@ -4,6 +4,8 @@ import type { GetCardsResponse } from '../types/cards.response'
 
 export async function getMyCards(): Promise<UserCard[]> {
   const { data } = await api.get<UserCard[]>('/me/cards')
+  console.log(data);
+
   return data
 }
 

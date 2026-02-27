@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { addCardsToUser, getCards, getMyCards } from '../services/cards.service'
+import {
+  addCardsToUser,
+  getCards,
+  getMyCards
+} from '../services/cards.service'
 import type { UserCard } from '../types/cards.types'
 import type { GetCardsResponse } from '../types/cards.response'
-import { toggleSelection } from 'src/shared/utils/selection.utils'
-import CardThumbnail from 'src/shared/components/ui/CardThumbnail.vue'
+import CardGrid from '../components/CardGrid.vue'
+import CardPreviewDialog from '../components/CardPreviewDialog.vue'
 
 const cards = ref<UserCard[]>([])
 const loading = ref(false)
@@ -15,6 +19,102 @@ const loadingAvailable = ref(false)
 const availableError = ref('')
 const selectedCardIds = ref<string[]>([])
 const addingCards = ref(false)
+const previewOpen = ref(false)
+const selectedPreviewCard = ref<UserCard | null>(null)
+const transitionOriginEl = ref<HTMLElement | null>(null)
+const transitionCard = ref<UserCard | null>(null)
+
+function handleCardSelect(payload: { id: string; el: HTMLElement | null }) {
+  const card = cards.value.find(c => c.id === payload.id)
+  if (!card) return
+
+  transitionCard.value = card
+  transitionOriginEl.value = payload.el
+
+  startCardTransition()
+}
+
+async function fetchMyCards() {
+  try {
+    loading.value = true
+    error.value = ''
+
+    cards.value = await getMyCards()
+
+  } catch {
+    error.value = 'Erro ao carregar suas cartas'
+  } finally {
+    loading.value = false
+  }
+}
+
+function startCardTransition() {
+  if (!transitionOriginEl.value || !transitionCard.value) return
+
+  const rect = transitionOriginEl.value.getBoundingClientRect()
+
+  const ghost = document.createElement('img')
+  ghost.src = transitionCard.value.imageUrl
+
+  ghost.style.position = 'fixed'
+  ghost.style.top = rect.top + 'px'
+  ghost.style.left = rect.left + 'px'
+  ghost.style.width = rect.width + 'px'
+  ghost.style.height = rect.height + 'px'
+  ghost.style.zIndex = '9999'
+  ghost.style.transition = 'all .45s cubic-bezier(.2,.8,.2,1)'
+
+  document.body.appendChild(ghost)
+
+  requestAnimationFrame(() => {
+    ghost.style.top = '50%'
+    ghost.style.left = '50%'
+    ghost.style.transform = 'translate(-50%, -50%) scale(1.6) rotateY(15deg)'
+  })
+
+  setTimeout(() => {
+    document.body.removeChild(ghost)
+    selectedPreviewCard.value = transitionCard.value
+    previewOpen.value = true
+  }, 450)
+}
+
+function animateBackToOrigin() {
+  if (!transitionOriginEl.value || !transitionCard.value) {
+    previewOpen.value = false
+    return
+  }
+
+  const rect = transitionOriginEl.value.getBoundingClientRect()
+
+  const ghost = document.createElement('img')
+  ghost.src = transitionCard.value.imageUrl
+
+  ghost.style.position = 'fixed'
+  ghost.style.top = '50%'
+  ghost.style.left = '50%'
+  ghost.style.transform = 'translate(-50%, -50%) scale(1.6) rotateY(15deg)'
+  ghost.style.width = rect.width + 'px'
+  ghost.style.height = rect.height + 'px'
+  ghost.style.zIndex = '9999'
+  ghost.style.transition = 'all .45s cubic-bezier(.2,.8,.2,1)'
+
+  document.body.appendChild(ghost)
+
+  previewOpen.value = false
+
+  requestAnimationFrame(() => {
+    ghost.style.top = rect.top + 'px'
+    ghost.style.left = rect.left + 'px'
+    ghost.style.transform = 'scale(1) rotateY(0deg)'
+  })
+
+  setTimeout(() => {
+    document.body.removeChild(ghost)
+    selectedPreviewCard.value = null
+    transitionCard.value = null
+  }, 450)
+}
 
 async function fetchAvailableCards() {
   try {
@@ -33,31 +133,23 @@ async function fetchAvailableCards() {
 
 function openAddDialog() {
   showAddDialog.value = true
+  selectedCardIds.value = []
   void fetchAvailableCards()
 }
 
-async function fetchMyCards() {
-  try {
-    loading.value = true
-    error.value = ''
+function toggleCardSelection(payload: { id: string }) {
+  const cardId = payload.id
 
-    const response = await getMyCards()
-    cards.value = response
-
-  } catch {
-    error.value = 'Erro ao carregar suas cartas'
-  } finally {
-    loading.value = false
+  if (selectedCardIds.value.includes(cardId)) {
+    selectedCardIds.value =
+      selectedCardIds.value.filter(id => id !== cardId)
+  } else {
+    selectedCardIds.value.push(cardId)
   }
 }
 
-function toggleCardSelection(cardId: string) {
-  selectedCardIds.value =
-    toggleSelection(selectedCardIds.value, cardId)
-}
-
 async function handleAddCards() {
-  if (selectedCardIds.value.length === 0) return
+  if (!selectedCardIds.value.length) return
 
   try {
     addingCards.value = true
@@ -69,8 +161,6 @@ async function handleAddCards() {
 
     await fetchMyCards()
 
-  } catch {
-    availableError.value = 'Erro ao adicionar cartas'
   } finally {
     addingCards.value = false
   }
@@ -82,42 +172,22 @@ onMounted(fetchMyCards)
 <template>
   <q-page class="q-pa-md">
 
-    <!-- HEADER -->
-    <div class="row justify-between items-center q-mb-lg">
-      <div class="text-h6">
-        Minhas Cartas
-      </div>
-
+    <div class="page-header">
       <q-btn label="Adicionar cartas" color="primary" icon="add" @click="openAddDialog" />
     </div>
 
-    <!-- STATES -->
-    <div v-if="loading">
-      Carregando suas cartas...
-    </div>
+    <CardGrid :cards="cards" :loading="loading" :error="error" empty-title="Nenhuma carta cadastrada"
+      empty-description="Adicione cartas para começar a negociar." @select="handleCardSelect" />
 
-    <div v-else-if="error">
-      {{ error }}
-    </div>
-
-    <div v-else-if="cards.length === 0">
-      Você ainda não possui cartas cadastradas.
-    </div>
-
-    <!-- GRID -->
-    <div v-else class="row q-col-gutter-md">
-      <div v-for="card in cards" :key="card.id" class="col-auto">
-        <CardThumbnail :image-url="card.imageUrl" :name="card.name" />
-      </div>
-    </div>
-
-    <!-- ADD DIALOG -->
     <q-dialog v-model="showAddDialog">
       <q-card class="add-dialog">
 
-        <q-card-section class="row items-center justify-between">
-          <div class="text-h6">
-            Adicionar cartas
+        <q-card-section class="dialog-header">
+          <div>
+            <div class="text-h6">Adicionar cartas</div>
+            <div class="text-caption text-grey-5">
+              Selecione cartas para adicionar ao seu inventário
+            </div>
           </div>
 
           <q-btn flat round dense icon="close" @click="showAddDialog = false" />
@@ -125,42 +195,55 @@ onMounted(fetchMyCards)
 
         <q-separator />
 
-        <q-card-section>
+        <q-card-section class="dialog-content">
 
-          <div v-if="loadingAvailable">
-            Carregando cartas...
-          </div>
-
-          <div v-else-if="availableError">
-            {{ availableError }}
-          </div>
-
-          <div v-else class="row q-col-gutter-md">
-            <div v-for="card in availableCards" :key="card.id" class="col-auto cursor-pointer"
-              @click="toggleCardSelection(card.id)">
-              <CardThumbnail :image-url="card.imageUrl" :name="card.name"
-                :selected="selectedCardIds.includes(card.id)" />
-            </div>
-          </div>
+          <CardGrid :cards="availableCards" :loading="loadingAvailable" :error="availableError" selectable
+            :selected-ids="selectedCardIds" empty-title="Nenhuma carta disponível" @select="toggleCardSelection" />
 
         </q-card-section>
+
+        <q-separator />
 
         <q-card-actions align="right">
           <q-btn flat label="Cancelar" @click="showAddDialog = false" />
 
-          <q-btn label="Adicionar à minha coleção" color="primary" :disable="selectedCardIds.length === 0"
+          <q-btn label="Adicionar à minha coleção" color="primary" :disable="!selectedCardIds.length"
             :loading="addingCards" @click="handleAddCards" />
         </q-card-actions>
 
       </q-card>
     </q-dialog>
 
+    <!-- PREVIEW CORRETO -->
+    <CardPreviewDialog v-model="previewOpen" :card="selectedPreviewCard" @close="animateBackToOrigin" />
+
   </q-page>
 </template>
 
 <style scoped>
+.page-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
 .add-dialog {
-  min-width: 600px;
-  max-width: 900px;
+  width: 900px;
+  max-width: 92vw;
+  height: 75vh;
+  display: flex;
+  flex-direction: column;
+  background: #1a1a2e;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dialog-content {
+  overflow-y: auto;
+  padding-top: 12px;
 }
 </style>

@@ -12,9 +12,9 @@ import type { UserCard } from 'src/modules/cards/types/cards.types'
 import { getCards, getMyCards } from 'src/modules/cards/services/cards.service'
 import { toggleSelection } from 'src/shared/utils/selection.utils'
 import type { GetCardsResponse } from 'src/modules/cards/types/cards.response'
-import LoadingSkeleton from 'src/shared/components/ui/LoadingSkeleton.vue'
-import EmptyState from 'src/shared/components/ui/EmptyState.vue'
-import CardThumbnail from 'src/shared/components/ui/CardThumbnail.vue'
+import LoadingSkeleton from 'src/shared/ui/components/LoadingSkeleton.vue'
+import EmptyState from 'src/shared/ui/components/EmptyState.vue'
+import CardThumbnail from 'src/shared/ui/components/CardThumbnail.vue'
 
 const trades = ref<TradeCardModel[]>([])
 const loading = ref(false)
@@ -23,15 +23,20 @@ const page = ref(1)
 const rpp = 10
 const hasMore = ref(false)
 const showCreateTradeDialog = ref(false)
+
 const myCards = ref<UserCard[]>([])
 const loadingMyCards = ref(false)
 const myCardsError = ref('')
+
 const availableCards = ref<UserCard[]>([])
 const loadingAvailable = ref(false)
 const availableError = ref('')
+
 const selectedOfferingIds = ref<string[]>([])
 const selectedReceivingIds = ref<string[]>([])
+
 const creatingTrade = ref(false)
+
 const isTradeValid = computed(() =>
   selectedOfferingIds.value.length > 0 &&
   selectedReceivingIds.value.length > 0
@@ -65,7 +70,6 @@ function loadMore() {
 
 function openCreateTradeDialog() {
   showCreateTradeDialog.value = true
-
   selectedOfferingIds.value = []
   selectedReceivingIds.value = []
 
@@ -126,7 +130,6 @@ function buildTradePayload() {
   return { cards }
 }
 
-
 async function handleCreateTrade() {
   if (!isTradeValid.value) return
 
@@ -167,10 +170,15 @@ onMounted(fetchTrades)
 <template>
   <q-page class="q-pa-md">
 
-    <!-- Header -->
-    <div class="row justify-between items-center q-mb-md">
-      <div class="text-h6">
-        Trocas
+    <!-- Page Header -->
+    <div class="page-header">
+      <div>
+        <div class="page-title">
+          Trocas
+        </div>
+        <div class="page-subtitle">
+          Trocas ativas do marketplace
+        </div>
       </div>
 
       <q-btn label="Criar troca" color="primary" icon="add" @click="openCreateTradeDialog" />
@@ -188,21 +196,20 @@ onMounted(fetchTrades)
     <EmptyState v-else-if="trades.length === 0" icon="swap_horiz" title="Nenhuma troca disponível"
       description="Seja o primeiro a criar uma troca." />
 
-    <!-- Lista -->
+    <!-- List -->
     <div v-else>
       <TradeCard v-for="trade in trades" :key="trade.id" :trade="trade" @delete="handleDeleteTrade" />
     </div>
 
-    <!-- Paginação -->
+    <!-- Pagination -->
     <div v-if="hasMore" class="text-center q-mt-md">
       <q-btn label="Carregar mais" color="primary" outline @click="loadMore" :loading="loading" />
     </div>
 
-    <!-- Dialog criação de trade -->
+    <!-- Create Trade Dialog -->
     <q-dialog v-model="showCreateTradeDialog">
       <q-card class="trade-dialog">
 
-        <!-- HEADER -->
         <q-card-section class="trade-dialog-header">
           <div>
             <div class="text-h6">Criar nova troca</div>
@@ -216,11 +223,9 @@ onMounted(fetchTrades)
 
         <q-separator />
 
-        <!-- CONTENT SCROLL -->
         <q-card-section class="trade-dialog-content">
 
-          <!-- OFFERING -->
-          <div class="text-subtitle1 q-mb-md">
+          <div class="section-title">
             Suas cartas (oferecendo)
           </div>
 
@@ -241,8 +246,7 @@ onMounted(fetchTrades)
 
           <q-separator class="q-my-lg" />
 
-          <!-- RECEIVING -->
-          <div class="text-subtitle1 q-mb-md">
+          <div class="section-title">
             Cartas desejadas (recebendo)
           </div>
 
@@ -261,10 +265,8 @@ onMounted(fetchTrades)
 
         <q-separator />
 
-        <!-- ACTIONS -->
         <q-card-actions align="right">
           <q-btn flat label="Cancelar" @click="showCreateTradeDialog = false" />
-
           <q-btn label="Criar troca" color="primary" :disable="!isTradeValid" :loading="creatingTrade"
             @click="handleCreateTrade" />
         </q-card-actions>
@@ -276,6 +278,32 @@ onMounted(fetchTrades)
 </template>
 
 <style scoped>
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.page-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.page-subtitle {
+  font-size: 13px;
+  color: #8b8bb3;
+  margin-top: 2px;
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 12px;
+  color: #d0d0ff;
+}
+
 .trade-dialog {
   width: 900px;
   max-width: 92vw;

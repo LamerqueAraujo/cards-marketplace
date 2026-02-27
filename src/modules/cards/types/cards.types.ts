@@ -4,4 +4,5 @@ export interface UserCard {
   description: string
   imageUrl: string
   createdAt: string
+  rarity?: 'common' | 'uncommon' | 'rare' | 'legendary'
 }
