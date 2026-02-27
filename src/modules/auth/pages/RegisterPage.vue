@@ -3,6 +3,9 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { register } from '../services/auth.service'
 
+import AppInput from 'src/shared/ui/components/AppInput.vue'
+import AuthCard from '../components/AuthCard.vue'
+
 const router = useRouter()
 
 const name = ref('')
@@ -12,6 +15,8 @@ const loading = ref(false)
 const errorMessage = ref('')
 
 async function onSubmit() {
+  if (!name.value || !email.value || !password.value) return
+
   try {
     loading.value = true
     errorMessage.value = ''
@@ -22,7 +27,6 @@ async function onSubmit() {
       password: password.value
     })
 
-    // após registrar → volta para login
     await router.push({ name: 'login' })
 
   } catch (error: unknown) {
@@ -38,32 +42,64 @@ async function onSubmit() {
 </script>
 
 <template>
-  <q-card class="q-pa-lg shadow-2">
+  <AuthCard>
 
-    <q-card-section>
-      <div class="text-h5 text-center">Register</div>
-    </q-card-section>
+    <div class="register-header">
+      <h1>Criar conta</h1>
+      <p>Monte seu inventário e comece a negociar</p>
+    </div>
 
-    <q-card-section>
-      <q-form @submit.prevent="onSubmit">
+    <q-form @submit.prevent="onSubmit" class="register-form" greedy>
 
-        <q-input v-model="name" label="Nome" outlined dense class="q-mb-md" />
+      <AppInput v-model="name" label="Nome" autocomplete="name" />
 
-        <q-input v-model="email" label="Email" type="email" outlined dense class="q-mb-md" />
+      <AppInput v-model="email" label="Email" type="email" autocomplete="email" />
 
-        <q-input v-model="password" label="Password" type="password" outlined dense class="q-mb-md" />
+      <AppInput v-model="password" label="Senha" type="password" autocomplete="new-password" />
 
-        <q-btn label="Cadastrar" color="primary" unelevated class="full-width q-mt-sm" type="submit"
-          :loading="loading" />
+      <q-btn label="Cadastrar" type="submit" color="primary" unelevated class="full-width q-mt-md" :loading="loading"
+        :disable="!name || !email || !password" />
 
-        <div v-if="errorMessage" class="text-negative text-caption q-mt-sm">
-          {{ errorMessage }}
-        </div>
+      <div v-if="errorMessage" class="register-error text-negative">
+        {{ errorMessage }}
+      </div>
 
-        <q-btn flat label="Já tenho conta" to="/login" class="full-width q-mt-sm" />
+      <q-separator class="q-my-md" dark />
 
-      </q-form>
-    </q-card-section>
+      <q-btn flat label="Já tenho conta" to="/login" class="full-width" color="grey-5" />
 
-  </q-card>
+    </q-form>
+
+  </AuthCard>
 </template>
+
+<style scoped lang="scss">
+.register-header {
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+.register-header h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: white;
+}
+
+.register-header p {
+  margin-top: 10px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.register-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.register-error {
+  margin-top: 14px;
+  text-align: center;
+  font-size: 13px;
+}
+</style>

@@ -33,22 +33,21 @@ const routes: RouteRecordRaw[] = [
     children: [
       {
         path: '',
-        name: 'marketplace',
-        component: () => import('src/modules/trades/pages/TradesPage.vue'),
-        meta: { title: 'Marketplace' }
-      }
-    ]
-  },
-
-  {
-    path: '/my-cards',
-    component: () => import('layouts/MainLayout.vue'),
-    children: [
+        name: 'home',
+        component: () => import('src/modules/home/pages/HomePage.vue'),
+        meta: { title: 'Início' }
+      },
       {
-        path: '',
+        path: 'trades',
+        name: 'trades',
+        component: () => import('src/modules/trades/pages/TradesPage.vue'),
+        meta: { title: 'Trocas' }
+      },
+      {
+        path: 'my-cards',
         name: 'my-cards',
         component: () => import('src/modules/cards/pages/MyCardsPage.vue'),
-        meta: { title: 'Meus Cards' }
+        meta: { title: 'Minhas cartas' }
       }
     ]
   },

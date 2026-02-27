@@ -2,8 +2,8 @@
 import { computed } from 'vue'
 import type { TradeCardModel } from '../types/trade-card.model'
 import { useAuthStore } from 'src/modules/auth/store/auth.store'
-import AppCard from 'src/shared/components/ui/AppCard.vue'
-import CardThumbnail from 'src/shared/components/ui/CardThumbnail.vue'
+import AppCard from 'src/shared/ui/components/AppCard.vue'
+import CardThumbnail from 'src/shared/ui/components/CardThumbnail.vue'
 
 const props = defineProps<{
   trade: TradeCardModel

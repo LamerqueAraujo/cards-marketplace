@@ -4,15 +4,20 @@ import { useRouter } from 'vue-router'
 import { login } from '../services/auth.service'
 import { useAuthStore } from '../store/auth.store'
 
+import AppInput from 'src/shared/ui/components/AppInput.vue'
+import AuthCard from '../components/AuthCard.vue'
+
 const router = useRouter()
+const authStore = useAuthStore()
 
 const email = ref('')
 const password = ref('')
 const loading = ref(false)
 const errorMessage = ref('')
-const authStore = useAuthStore()
 
 async function onSubmit() {
+  if (!email.value || !password.value) return
+
   try {
     loading.value = true
     errorMessage.value = ''
@@ -23,8 +28,7 @@ async function onSubmit() {
     })
 
     authStore.setToken(response.token, response.user.id)
-
-    await router.push({ name: 'marketplace' })
+    await router.push({ name: 'home' })
 
   } catch (error: unknown) {
     if (error instanceof Error && error.message === 'INVALID_CREDENTIALS') {
@@ -39,29 +43,63 @@ async function onSubmit() {
 </script>
 
 <template>
-  <q-card class="q-pa-lg shadow-2">
+  <AuthCard>
 
-    <q-card-section>
-      <div class="text-h5 text-center">Login</div>
-    </q-card-section>
+    <div class="login-header">
+      <h1>Duel Market</h1>
+      <p>Negocie cartas como um profissional</p>
+    </div>
 
-    <q-card-section>
-      <q-form @submit.prevent="onSubmit">
+    <q-form @submit.prevent="onSubmit" class="login-form" greedy>
 
-        <q-input v-model="email" label="Email" type="email" outlined dense class="q-mb-md" />
+      <AppInput v-model="email" label="Email" type="email" autocomplete="email" />
 
-        <q-input v-model="password" label="Password" type="password" outlined dense class="q-mb-md" />
+      <AppInput v-model="password" label="Senha" type="password" autocomplete="current-password" />
 
-        <q-btn label="Entrar" color="primary" unelevated class="full-width q-mt-sm" type="submit" :loading="loading" />
+      <q-btn label="Entrar" type="submit" color="primary" unelevated class="full-width q-mt-md" :loading="loading"
+        :disable="!email || !password" />
 
-        <div v-if="errorMessage" class="text-negative text-caption q-mt-sm">
-          {{ errorMessage }}
-        </div>
+      <div v-if="errorMessage" class="login-error text-negative">
+        {{ errorMessage }}
+      </div>
 
-        <q-btn flat label="Criar conta" to="/register" class="full-width q-mt-sm" />
+      <q-separator class="q-my-md" dark />
 
-      </q-form>
-    </q-card-section>
+      <q-btn flat label="Criar conta" to="/register" class="full-width" color="grey-5" />
 
-  </q-card>
+    </q-form>
+
+  </AuthCard>
 </template>
+
+<style scoped lang="scss">
+.login-header {
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+.login-header h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 0.5px;
+}
+
+.login-header p {
+  margin-top: 10px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.login-error {
+  margin-top: 14px;
+  text-align: center;
+  font-size: 13px;
+}
+</style>
