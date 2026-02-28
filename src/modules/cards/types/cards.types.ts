@@ -1,4 +1,6 @@
-export interface UserCard {
+import type { BaseCard } from "../../../shared/types/card.types"
+
+export interface UserCard extends BaseCard {
   id: string
   name: string
   description: string

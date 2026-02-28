@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount } from 'vue'
-import type { UserCard } from '../types/cards.types'
+import type { BaseCard } from 'src/shared/types/card.types'
 import type { ComponentPublicInstance } from 'vue'
 
-import CardItem from './CardItem.vue'
-import LoadingState from 'src/shared/ui/components/LoadingState.vue'
-import EmptyState from 'src/shared/ui/components/EmptyState.vue'
-import ErrorState from 'src/shared/ui/components/ErrorState.vue'
+import CardItem from 'src/shared/ui/data-display/CardItem.vue'
 import CardSlot from './CardSlot.vue'
+import LoadingState from 'src/shared/ui/feedback/LoadingState.vue'
+import EmptyState from 'src/shared/ui/feedback/EmptyState.vue'
+import ErrorState from 'src/shared/ui/feedback/ErrorState.vue'
 
 const props = withDefaults(defineProps<{
-  cards: UserCard[]
+  cards: BaseCard[]
   loading?: boolean
   error?: string
   selectable?: boolean
@@ -22,8 +22,8 @@ const props = withDefaults(defineProps<{
   loading: false,
   error: '',
   selectable: false,
-  minSlots: 0,
-  selectedIds: () => []
+  selectedIds: () => [],
+  minSlots: 0
 })
 
 const emit = defineEmits<{
@@ -33,7 +33,7 @@ const emit = defineEmits<{
 
 const cardRefs = new Map<string, HTMLElement>()
 
-const displayItems = computed<(UserCard | null)[]>(() => {
+const displayItems = computed<(BaseCard | null)[]>(() => {
   const filled = [...props.cards]
 
   if (!props.minSlots || filled.length >= props.minSlots) {
@@ -47,6 +47,7 @@ const displayItems = computed<(UserCard | null)[]>(() => {
     ...Array.from({ length: emptyCount }, () => null)
   ]
 })
+
 function registerRef(
   id: string,
   el: Element | ComponentPublicInstance | null
@@ -80,18 +81,24 @@ onBeforeUnmount(() => {
 
 <template>
 
+  <!-- Estados globais -->
   <LoadingState v-if="loading" type="grid" />
+
   <ErrorState v-else-if="error" :title="error" />
+
   <EmptyState v-else-if="cards.length === 0 && !minSlots" icon="style" :title="emptyTitle || 'Nenhuma carta encontrada'"
     :description="emptyDescription" />
 
+  <!-- Grid com ou sem slots -->
   <div v-else class="cards-grid">
 
     <template v-for="(item, index) in displayItems" :key="item?.id ?? `slot-${index}`">
 
+      <!-- Carta real -->
       <CardItem v-if="item" :index="index" :ref="el => registerRef(item.id, el)" :card="item" :selectable="selectable"
         :selected="selectedIds.includes(item.id)" @click="handleClick(item.id)" />
 
+      <!-- Slot vazio -->
       <CardSlot v-else interactive @click="$emit('empty-slot-click')" />
 
     </template>
