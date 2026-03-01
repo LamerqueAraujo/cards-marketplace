@@ -2,10 +2,10 @@
 import { useRouter } from 'vue-router'
 import { onMounted, ref } from 'vue'
 import { getDashboardSummary } from '../services/dashboard.service'
-import SurfaceCard from 'src/shared/ui/components/SurfaceCard.vue'
-import StatCard from 'src/shared/ui/components/StatCard.vue'
-import LoadingState from 'src/shared/ui/components/LoadingState.vue'
-import ErrorState from 'src/shared/ui/components/ErrorState.vue'
+import SurfaceCard from 'src/shared/ui/base/SurfaceCard.vue'
+import StatCard from 'src/shared/ui/base/StatCard.vue'
+import LoadingState from 'src/shared/ui/feedback/LoadingState.vue'
+import ErrorState from 'src/shared/ui/feedback/ErrorState.vue'
 
 const router = useRouter()
 const summary = ref({

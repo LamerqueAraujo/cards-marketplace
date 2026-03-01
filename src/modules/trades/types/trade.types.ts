@@ -1,15 +1,11 @@
+import type { BaseCard } from "../../../shared/types/card.types"
+
 export interface TradeCard {
   id: string
   cardId: string
   tradeId: string
   type: 'OFFERING' | 'RECEIVING'
-  card: {
-    id: string
-    name: string
-    description: string
-    imageUrl: string
-    createdAt: string
-  }
+  card: BaseCard
 }
 
 export interface Trade {

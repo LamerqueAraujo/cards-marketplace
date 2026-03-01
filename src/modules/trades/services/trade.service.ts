@@ -1,40 +1,15 @@
 import { api } from 'boot/axios'
-import type { GetTradesResponse, Trade } from '../types/trade.types'
-import type { TradeCardModel } from '../types/trade-card.model'
+import type { GetTradesResponse } from '../types/trade.types'
 
-export async function getTrades(page = 1, rpp = 10): Promise<GetTradesResponse> {
+export async function getTrades(
+  page = 1,
+  rpp = 10
+): Promise<GetTradesResponse> {
   const { data } = await api.get<GetTradesResponse>('/trades', {
     params: { page, rpp }
   })
 
   return data
-}
-
-export function mapTradeToCardModel(trade: Trade): TradeCardModel {
-  const offering = trade.tradeCards
-    .filter(tc => tc.type === 'OFFERING')
-    .map(tc => ({
-      id: tc.card.id,
-      name: tc.card.name,
-      imageUrl: tc.card.imageUrl
-    }))
-
-  const receiving = trade.tradeCards
-    .filter(tc => tc.type === 'RECEIVING')
-    .map(tc => ({
-      id: tc.card.id,
-      name: tc.card.name,
-      imageUrl: tc.card.imageUrl
-    }))
-
-  return {
-    id: trade.id,
-    userName: trade.user.name,
-    userId: trade.userId,
-    createdAt: trade.createdAt,
-    offering,
-    receiving
-  }
 }
 
 export async function createTrade(payload: {
@@ -46,4 +21,13 @@ export async function createTrade(payload: {
 
 export async function deleteTrade(tradeId: string) {
   await api.delete(`/trades/${tradeId}`)
+}
+
+export async function completeTrade(
+  tradeId: string,
+  selectedCardIds: string[]
+) {
+  await api.post(`/trades/${tradeId}/complete`, {
+    selectedCardIds
+  })
 }

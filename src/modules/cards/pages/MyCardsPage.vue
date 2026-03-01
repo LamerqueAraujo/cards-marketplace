@@ -2,9 +2,10 @@
 import { ref, onMounted } from 'vue'
 import type { UserCard } from '../types/cards.types'
 
-import CardGrid from '../components/CardGrid.vue'
-import CardPreviewContent from '../components/CardPreviewContent.vue'
-import BaseDialog from '../../../shared/ui/components/BaseDialog.vue'
+import CardGrid from 'src/shared/ui/data-display/CardGrid.vue'
+import CardPreviewDialog from 'src/shared/ui/data-display/CardPreviewDialog.vue'
+import InventoryGrid from '../components/InventoryGrid.vue'
+import BaseDialog from 'src/shared/ui/base/BaseDialog.vue'
 
 import { useMyCards } from '../composables/useMyCards'
 import { useCardPreviewTransition } from '../composables/useCardPreviewTransition'
@@ -12,20 +13,20 @@ import { useCardPreviewTransition } from '../composables/useCardPreviewTransitio
 const showAddDialog = ref(false)
 const previewOpen = ref(false)
 const selectedPreviewCard = ref<UserCard | null>(null)
+
 const {
   myCards,
-  availableCards,
   loading,
-  loadingAvailable,
   error,
-  availableError,
   selectedCardIds,
   addingCards,
+  availableCards,
   fetchMyCards,
   fetchAvailableCards,
-  toggleCardSelection,
-  addSelectedCards
+  addSelectedCards,
+  toggleCardSelection
 } = useMyCards()
+
 const {
   handleCardSelect,
   animateBackToOrigin
@@ -64,13 +65,13 @@ onMounted(fetchMyCards)
       <q-btn label="Adicionar cartas" color="primary" icon="add" @click="openAddDialog" />
     </div>
 
-    <CardGrid :cards="myCards" :min-slots="27" :loading="loading" :error="error" empty-title="Nenhuma carta cadastrada"
-      empty-description="Adicione cartas para começar a negociar." @select="handleCardSelect" />
+    <InventoryGrid :cards="myCards" :min-slots="27" :loading="loading" :error="error"
+      empty-title="Nenhuma carta cadastrada" empty-description="Adicione cartas para começar a negociar."
+      @select="handleCardSelect" @empty-slot-click="openAddDialog" />
 
     <BaseDialog v-model="showAddDialog" title="Adicionar cartas"
       subtitle="Selecione cartas para adicionar ao seu inventário" width="1000px">
-      <CardGrid :cards="availableCards" :loading="loadingAvailable" :error="availableError" selectable
-        :selected-ids="selectedCardIds" empty-title="Nenhuma carta disponível"
+      <CardGrid :cards="availableCards" selectable :selected-ids="selectedCardIds"
         @select="({ id }) => toggleCardSelection(id)" />
 
       <template #footer>
@@ -81,14 +82,9 @@ onMounted(fetchMyCards)
       </template>
     </BaseDialog>
 
-    <BaseDialog v-model="previewOpen" width="800px">
-      <CardPreviewContent v-if="selectedPreviewCard" :name="selectedPreviewCard.name"
-        :description="selectedPreviewCard.description" :image-url="selectedPreviewCard.imageUrl" />
-
-      <template #footer>
-        <q-btn flat label="Fechar" @click="animateBackToOrigin" />
-      </template>
-    </BaseDialog>
+    <CardPreviewDialog v-model="previewOpen" :card="selectedPreviewCard" @update:modelValue="(value) => {
+      if (!value) animateBackToOrigin()
+    }" />
 
   </q-page>
 </template>

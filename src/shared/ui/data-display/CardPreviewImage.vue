@@ -17,7 +17,6 @@ defineProps<{
 
 .preview-image {
   width: 260px;
-  border-radius: 16px;
 
   box-shadow:
     0 25px 60px rgba(0, 0, 0, .85),

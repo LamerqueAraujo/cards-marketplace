@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
-import type { UserCard } from '../types/cards.types'
-import { getCardRarity } from '../utils/rarity.utils'
+import type { BaseCard } from 'src/shared/types/card.types'
+import { getCardRarity } from 'src/shared/utils/rarity.utils'
 import cardBack from 'src/assets/card-back.jpg'
 
 const props = defineProps<{
-  card: UserCard
+  card: BaseCard
   index: number
   selected?: boolean
   selectable?: boolean
+  static?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -16,7 +17,11 @@ const emit = defineEmits<{
 }>()
 
 const rarity = computed(() => getCardRarity(props.card.id))
-const isInteractive = computed(() => !props.selectable)
+
+// Interativo apenas se NÃO for selectable e NÃO for static
+const isInteractive = computed(() =>
+  !props.selectable && !props.static
+)
 
 const tiltX = ref(0)
 const tiltY = ref(0)
@@ -48,6 +53,11 @@ function handleClick() {
 }
 
 onMounted(() => {
+  if (props.static) {
+    revealed.value = true
+    return
+  }
+
   setTimeout(() => {
     revealed.value = true
   }, props.index * 80 + 600)
@@ -55,13 +65,15 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="card-entry" :class="{ selected }" :style="{ animationDelay: `${index * 80}ms` }">
+  <div class="card-entry" :class="{ selected, static }" :style="{ animationDelay: `${index * 80}ms` }">
     <div class="card-flip" :class="{ flipped: revealed }">
 
+      <!-- BACK -->
       <div class="card-face card-back">
         <img :src="cardBack" alt="Card back" />
       </div>
 
+      <!-- FRONT -->
       <div class="card-face card-front">
         <div class="card-tilt" :class="[`rarity-${rarity}`, { selectable }]" @mousemove="handleMouseMove"
           @mouseleave="resetTilt" @click="handleClick" :style="isInteractive
@@ -72,7 +84,6 @@ onMounted(() => {
           <div v-if="selected" class="selection-overlay">
             ✓
           </div>
-
         </div>
       </div>
 
@@ -88,18 +99,30 @@ onMounted(() => {
   perspective: 1200px;
 
   opacity: 0;
-  transform: translateY(-60px) rotate(-12deg);
-  animation: dealCard .6s cubic-bezier(.22, 1, .36, 1) forwards;
+  animation: dealCard .4s forwards;
+
+  transition: transform .25s ease, filter .25s ease;
   will-change: transform, opacity;
 }
 
 @keyframes dealCard {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
   to {
     opacity: 1;
-    transform: translateY(0) rotate(0deg);
+    transform: translateY(0);
   }
 }
 
+.card-entry:not(.static):not(.selected):hover {
+  transform: translateY(-6px) scale(1.06);
+  filter: brightness(1.06);
+}
+
+/* Flip */
 .card-flip {
   position: relative;
   width: 100%;
@@ -112,7 +135,6 @@ onMounted(() => {
   transform: rotateY(180deg);
 }
 
-/* FACES */
 .card-face {
   position: absolute;
   inset: 0;
@@ -131,11 +153,13 @@ onMounted(() => {
 .card-tilt {
   width: 100%;
   height: 100%;
-  transition: transform .15s ease, box-shadow .25s ease;
+  transition:
+    transform .15s ease,
+    box-shadow .25s ease,
+    filter .25s ease;
   transform-style: preserve-3d;
 }
 
-/* IMAGE */
 .card-face img {
   width: 100%;
   height: 100%;
@@ -143,7 +167,7 @@ onMounted(() => {
   display: block;
 }
 
-/* RARITY EFFECTS */
+/* RARIDADE */
 .rarity-rare {
   box-shadow:
     0 14px 25px rgba(0, 0, 0, .7),
@@ -162,35 +186,23 @@ onMounted(() => {
     0 0 30px rgba(255, 215, 0, .45);
 }
 
-.card-entry.selected .card-tilt {
+/* Hover adicional de profundidade */
+.card-entry:not(.static):not(.selected):hover .card-tilt {
   box-shadow:
-    0 0 0 3px var(--primary),
-    0 25px 40px rgba(0, 0, 0, .7);
+    0 0 0 2px rgba(138, 43, 226, .4),
+    0 30px 50px rgba(0, 0, 0, .8);
 }
 
-.card-tilt.selectable {
-  cursor: pointer;
-  transition: transform .15s ease,
-    box-shadow .25s ease,
-    filter .25s ease;
-}
-
-.card-tilt.selectable:hover {
-  transform: scale(1.04);
-  filter: brightness(1.05);
-  box-shadow:
-    0 0 0 2px rgba(138, 43, 226, .5),
-    0 20px 35px rgba(0, 0, 0, .6);
-}
-
+/* Selecionado */
 .card-entry.selected .card-tilt {
-  transform: scale(1.06);
+  transform: scale(1.07);
   box-shadow:
     0 0 0 3px var(--primary),
     0 0 25px rgba(138, 43, 226, .6),
-    0 25px 40px rgba(0, 0, 0, .7);
+    0 30px 50px rgba(0, 0, 0, .8);
 }
 
+/* Overlay seleção */
 .selection-overlay {
   position: absolute;
   inset: 0;
@@ -205,31 +217,12 @@ onMounted(() => {
   animation: fadeIn .18s ease;
 }
 
-.selection-overlay::after {
-  font-size: 32px;
-  font-weight: 700;
-  color: white;
-  text-shadow: 0 0 15px rgba(138, 43, 226, 0.2);
-}
-
 @keyframes fadeIn {
   from {
     opacity: 0;
   }
 
   to {
-    opacity: 1;
-  }
-}
-
-@keyframes pop {
-  from {
-    transform: scale(.6);
-    opacity: 0;
-  }
-
-  to {
-    transform: scale(1);
     opacity: 1;
   }
 }
