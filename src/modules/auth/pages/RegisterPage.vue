@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { register } from '../services/auth.service'
 
-import AppInput from 'src/shared/ui/components/AppInput.vue'
+import AppInput from 'src/shared/ui/base/AppInput.vue'
 import AuthCard from '../components/AuthCard.vue'
 
 const router = useRouter()

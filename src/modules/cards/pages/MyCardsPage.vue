@@ -6,7 +6,7 @@ import CardGrid from 'src/shared/ui/data-display/CardGrid.vue'
 import CardPreviewDialog from 'src/shared/ui/data-display/CardPreviewDialog.vue'
 import InventoryGrid from '../components/InventoryGrid.vue'
 import BaseDialog from 'src/shared/ui/base/BaseDialog.vue'
-
+import AppButton from 'src/shared/ui/base/AppButton.vue'
 import { useMyCards } from '../composables/useMyCards'
 import { useCardPreviewTransition } from '../composables/useCardPreviewTransition'
 
@@ -62,7 +62,7 @@ onMounted(fetchMyCards)
   <q-page class="q-pa-md">
 
     <div class="page-header">
-      <q-btn label="Adicionar cartas" color="primary" icon="add" @click="openAddDialog" />
+      <AppButton label="Adicionar cartas" icon="add" @click="openAddDialog" />
     </div>
 
     <InventoryGrid :cards="myCards" :min-slots="27" :loading="loading" :error="error"

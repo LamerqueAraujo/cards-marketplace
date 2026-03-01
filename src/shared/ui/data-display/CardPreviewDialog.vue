@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import type { BaseCard } from 'src/shared/types/card.types'
 import BaseDialog from 'src/shared/ui/base/BaseDialog.vue'
+import AppButton from 'src/shared/ui/base/AppButton.vue'
 import CardPreviewContent from './CardPreviewContent.vue'
 
-defineProps<{
+const props = defineProps<{
   modelValue: boolean
   card: BaseCard | null
 }>()
@@ -18,11 +19,12 @@ function close() {
 </script>
 
 <template>
-  <BaseDialog :model-value="modelValue" width="800px" @update:modelValue="emit('update:modelValue', $event)">
+  <BaseDialog :model-value="props.modelValue" width="800px" title="Pré-visualização"
+    @update:model-value="emit('update:modelValue', $event)">
     <CardPreviewContent v-if="card" :card="card" />
 
     <template #footer>
-      <q-btn flat label="Fechar" @click="close" />
+      <AppButton label="Fechar" variant="ghost" @click="close" />
     </template>
   </BaseDialog>
 </template>

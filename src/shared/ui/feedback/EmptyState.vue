@@ -1,63 +1,74 @@
 <script setup lang="ts">
-defineProps<{
+withDefaults(defineProps<{
+  icon?: string
   title: string
-  description?: string | undefined
-  icon?: string | undefined
-}>()
+  description?: string
+}>(), {
+  icon: 'inbox'
+})
 </script>
 
 <template>
-  <div class="empty-state">
+  <div class="ds-state ds-state--empty" role="status" aria-live="polite">
+    <q-icon :name="icon" class="ds-state__icon" />
+    <div class="ds-state__title">{{ title }}</div>
 
-    <q-icon :name="icon || 'inbox'" size="48px" class="empty-icon" />
-
-    <div class="empty-title">
-      {{ title }}
-    </div>
-
-    <div v-if="description" class="empty-description">
+    <div v-if="description" class="ds-state__desc">
       {{ description }}
     </div>
 
-    <div class="empty-actions">
-      <slot />
+    <div v-if="$slots.actions" class="ds-state__actions">
+      <slot name="actions" />
     </div>
-
   </div>
 </template>
 
 <style scoped lang="scss">
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 48px 24px;
+.ds-state {
+  width: 100%;
+  max-width: var(--feedback-max-width);
+  margin: 0 auto;
+  padding: var(--space-6);
   text-align: center;
 
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-lg);
+  background: var(--surface-2);
+  backdrop-filter: blur(10px);
+
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
 }
 
-.empty-icon {
-  margin-bottom: 16px;
-  color: rgba(255, 255, 255, 0.4);
+/* Empty variant */
+.ds-state--empty {
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.25),
+    0 0 18px var(--glow-soft);
 }
 
-.empty-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #ffffff;
+.ds-state__icon {
+  font-size: 44px;
+  margin-bottom: var(--space-3);
+  filter: drop-shadow(0 0 16px var(--glow-soft));
+  opacity: 0.9;
 }
 
-.empty-description {
-  margin-top: 6px;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.6);
+.ds-state__title {
+  font-size: var(--text-subtitle);
+  font-weight: 700;
+  color: #fff;
 }
 
-.empty-actions {
-  margin-top: 16px;
+.ds-state__desc {
+  margin-top: var(--space-2);
+  font-size: var(--text-body);
+  color: var(--text-muted);
+}
+
+.ds-state__actions {
+  margin-top: var(--space-5);
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3);
 }
 </style>

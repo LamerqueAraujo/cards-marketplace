@@ -4,7 +4,8 @@ import { useRouter } from 'vue-router'
 import { login } from '../services/auth.service'
 import { useAuthStore } from '../store/auth.store'
 
-import AppInput from 'src/shared/ui/components/AppInput.vue'
+import AppInput from 'src/shared/ui/base/AppInput.vue'
+import AppButton from 'src/shared/ui/base/AppButton.vue'
 import AuthCard from '../components/AuthCard.vue'
 
 const router = useRouter()
@@ -29,7 +30,6 @@ async function onSubmit() {
 
     authStore.setToken(response.token, response.user.id)
     await router.push({ name: 'home' })
-
   } catch (error: unknown) {
     if (error instanceof Error && error.message === 'INVALID_CREDENTIALS') {
       errorMessage.value = 'Email ou senha inválidos'
@@ -44,62 +44,69 @@ async function onSubmit() {
 
 <template>
   <AuthCard>
-
     <div class="login-header">
-      <h1>Duel Market</h1>
+      <h1 class="text-display title-gradient">Duel Market</h1>
       <p>Negocie cartas como um profissional</p>
     </div>
 
-    <q-form @submit.prevent="onSubmit" class="login-form" greedy>
+    <q-form @submit.prevent="onSubmit" greedy>
+      <div class="ds-form">
+        <AppInput v-model="email" label="Email" type="email" autocomplete="email" />
+        <AppInput v-model="password" label="Senha" type="password" autocomplete="current-password" />
+      </div>
 
-      <AppInput v-model="email" label="Email" type="email" autocomplete="email" />
-
-      <AppInput v-model="password" label="Senha" type="password" autocomplete="current-password" />
-
-      <q-btn label="Entrar" type="submit" color="primary" unelevated class="full-width q-mt-md" :loading="loading"
-        :disable="!email || !password" />
-
-      <div v-if="errorMessage" class="login-error text-negative">
+      <div v-if="errorMessage" class="login-error">
         {{ errorMessage }}
       </div>
 
-      <q-separator class="q-my-md" dark />
+      <div class="ds-form-actions">
+        <AppButton label="Entrar" icon="login" type="submit" :loading="loading" :disabled="!email || !password" block />
 
-      <q-btn flat label="Criar conta" to="/register" class="full-width" color="grey-5" />
+        <div class="login-divider">
+          <span />
+        </div>
 
+        <AppButton label="Criar conta" variant="ghost" icon="person_add" to="/register" block />
+      </div>
     </q-form>
-
   </AuthCard>
 </template>
 
 <style scoped lang="scss">
 .login-header {
   text-align: center;
-  margin-bottom: 36px;
+  margin-bottom: var(--space-6);
 }
 
 .login-header h1 {
   margin: 0;
   font-size: 28px;
-  font-weight: 700;
-  color: white;
-  letter-spacing: 0.5px;
+  font-weight: 800;
 }
 
 .login-header p {
-  margin-top: 10px;
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.55);
-}
-
-.login-form {
-  display: flex;
-  flex-direction: column;
+  margin-top: var(--space-2);
+  font-size: var(--text-body);
+  color: var(--text-muted);
 }
 
 .login-error {
-  margin-top: 14px;
+  margin-top: var(--space-4);
   text-align: center;
-  font-size: 13px;
+  font-size: var(--text-caption);
+  color: #ff6b6b;
+}
+
+.login-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: var(--space-3) 0;
+}
+
+.login-divider span {
+  width: 100%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.10);
 }
 </style>

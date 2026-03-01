@@ -71,7 +71,6 @@ onMounted(() => {
 <template>
   <div class="card-entry" :class="{ selected, static }" :style="{ animationDelay: `${index * 80}ms` }">
     <div class="card-flip" :class="{ flipped: revealed }">
-
       <div class="card-face card-back">
         <img :src="cardBack" alt="Card back" />
       </div>
@@ -89,7 +88,6 @@ onMounted(() => {
           </div>
         </div>
       </div>
-
     </div>
   </div>
 </template>
@@ -163,12 +161,13 @@ onMounted(() => {
     filter 220ms var(--ease-smooth);
 
   outline: none;
+  will-change: transform;
 }
 
 .card-tilt:focus-visible {
   box-shadow:
-    0 0 0 2px var(--focus-ring),
     var(--shadow-card-base),
+    0 0 0 2px var(--focus-ring),
     0 0 22px var(--glow-primary);
 }
 
@@ -199,16 +198,17 @@ onMounted(() => {
 
 .card-entry:not(.static):not(.selected):hover .card-tilt {
   box-shadow:
+    var(--shadow-card-base),
     0 0 0 2px rgba(139, 92, 246, 0.40),
-    0 30px 50px rgba(0, 0, 0, .80);
+    0 0 28px var(--glow-primary);
 }
 
 .card-entry.selected .card-tilt {
   transform: scale(1.06);
   box-shadow:
     0 0 0 3px var(--focus-ring),
-    0 0 25px rgba(139, 92, 246, .55),
-    0 30px 50px rgba(0, 0, 0, .80);
+    0 0 25px rgba(139, 92, 246, 0.55),
+    0 30px 50px rgba(0, 0, 0, 0.80);
 }
 
 .selection-overlay {
@@ -216,8 +216,8 @@ onMounted(() => {
   inset: 0;
 
   background: linear-gradient(to bottom,
-      rgba(139, 92, 246, .14),
-      rgba(139, 92, 246, .26));
+      rgba(139, 92, 246, 0.14),
+      rgba(139, 92, 246, 0.26));
 
   display: flex;
   align-items: center;
@@ -242,10 +242,7 @@ onMounted(() => {
     opacity: 1;
   }
 
-  .card-flip {
-    transition: none;
-  }
-
+  .card-flip,
   .card-tilt {
     transition: none;
   }
