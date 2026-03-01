@@ -1,10 +1,12 @@
 <script setup lang="ts">
-defineProps<{
+withDefaults(defineProps<{
   modelValue: boolean
-  title?: string | undefined
-  subtitle?: string | undefined
-  width?: string | undefined
-}>()
+  title?: string
+  subtitle?: string
+  width?: string
+}>(), {
+  width: '1000px'
+})
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void
@@ -18,12 +20,15 @@ function close() {
 <template>
   <q-dialog :model-value="modelValue" @update:model-value="emit('update:modelValue', $event)" transition-show="fade"
     transition-hide="fade">
-    <div class="base-dialog" :style="{ width: width || '1000px' }">
+    <div class="base-dialog" :style="{ width }">
 
       <!-- HEADER -->
       <div class="dialog-header">
         <div>
-          <div class="dialog-title">{{ title }}</div>
+          <div v-if="title" class="dialog-title text-display">
+            {{ title }}
+          </div>
+
           <div v-if="subtitle" class="dialog-subtitle">
             {{ subtitle }}
           </div>
@@ -54,38 +59,42 @@ function close() {
   display: flex;
   flex-direction: column;
 
-  border-radius: 20px;
-  background: #14142a;
+  border-radius: var(--radius-lg);
+  background: var(--surface-1);
+
+  border: 1px solid var(--surface-border);
 
   box-shadow:
-    0 40px 100px rgba(0, 0, 0, .9),
-    inset 0 0 0 1px rgba(255, 255, 255, .04);
+    0 40px 100px rgba(0, 0, 0, .85),
+    0 0 40px var(--glow-primary);
 
   overflow: hidden;
+
+  transition: box-shadow 220ms var(--ease-smooth);
 }
 
 /* HEADER */
 .dialog-header {
-  padding: 22px 28px;
+  padding: var(--space-5) var(--space-6);
   display: flex;
   justify-content: space-between;
   align-items: center;
 
   background: linear-gradient(to right,
-      rgba(75, 0, 130, .15),
+      rgba(139, 92, 246, .15),
       rgba(30, 144, 255, .05));
 
-  border-bottom: 1px solid rgba(255, 255, 255, .05);
+  border-bottom: 1px solid var(--surface-border);
 }
 
 .dialog-title {
-  font-size: 20px;
-  font-weight: 600;
-  color: white;
+  font-size: var(--text-title);
+  font-weight: 700;
 }
 
 .dialog-subtitle {
-  font-size: 13px;
+  margin-top: 4px;
+  font-size: var(--text-caption);
   color: rgba(255, 255, 255, .6);
 }
 
@@ -93,7 +102,7 @@ function close() {
 .dialog-body {
   flex: 1;
   overflow-y: auto;
-  padding: 24px 28px;
+  padding: var(--space-6);
 }
 
 .dialog-body::-webkit-scrollbar {
@@ -101,18 +110,18 @@ function close() {
 }
 
 .dialog-body::-webkit-scrollbar-thumb {
-  background: rgba(138, 43, 226, .6);
+  background: rgba(139, 92, 246, .6);
   border-radius: 6px;
 }
 
 /* FOOTER */
 .dialog-footer {
-  padding: 18px 28px;
+  padding: var(--space-5) var(--space-6);
   display: flex;
   justify-content: flex-end;
-  gap: 14px;
+  gap: var(--space-4);
 
-  border-top: 1px solid rgba(255, 255, 255, .05);
+  border-top: 1px solid var(--surface-border);
   background: rgba(0, 0, 0, .25);
 }
 </style>
