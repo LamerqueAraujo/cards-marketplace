@@ -6,6 +6,10 @@
   --text-subtitle: 16px;
   --text-body: 14px;
   --text-caption: 12px;
+  --text-muted: rgba(255, 255, 255, 0.62);
+  --text-soft: rgba(255, 255, 255, 0.78);
+  --feedback-max-width: 520px;
+  --glow-soft: rgba(139, 92, 246, 0.22);
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -20,6 +24,9 @@
   --surface-border: rgba(46, 46, 77, 0.85);
   --glow-primary: rgba(139, 92, 246, 0.35);
   --gradient-primary: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 45%, #4b0082 100%);
+  --grid-gap: var(--space-4);
+  --grid-card-min: 160px;         
+  --grid-card-min-lg: 180px;    
 }
 
 body {

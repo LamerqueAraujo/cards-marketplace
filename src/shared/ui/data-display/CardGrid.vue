@@ -74,10 +74,21 @@ onBeforeUnmount(() => {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 16px;
+  gap: var(--grid-gap);
+  grid-template-columns: repeat(auto-fit, minmax(var(--grid-card-min), 1fr));
+  align-items: start;
+}
+
+.cards-grid>* {
+  min-width: 0;
+}
+
+@media (min-width: 1200px) {
+  .cards-grid {
+    grid-template-columns: repeat(auto-fit, minmax(var(--grid-card-min-lg), 1fr));
+  }
 }
 </style>

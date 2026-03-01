@@ -50,7 +50,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <AppPageLayout title="Trocas" subtitle="Trocas ativas do marketplace">
+  <AppPageLayout title="Marketplace" subtitle="Explore as trocas disponíveis ou crie a sua própria troca!"
+    icon="swap_horiz">
     <template #actions>
       <q-btn label="Criar troca" color="primary" icon="add" @click="openCreateTradeDialog" />
     </template>
