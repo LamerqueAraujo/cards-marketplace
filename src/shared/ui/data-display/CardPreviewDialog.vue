@@ -3,7 +3,7 @@ import type { BaseCard } from 'src/shared/types/card.types'
 import BaseDialog from 'src/shared/ui/base/BaseDialog.vue'
 import CardPreviewContent from './CardPreviewContent.vue'
 
-const props = defineProps<{
+defineProps<{
   modelValue: boolean
   card: BaseCard | null
 }>()

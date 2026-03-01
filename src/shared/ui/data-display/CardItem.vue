@@ -99,22 +99,24 @@ onMounted(() => {
   perspective: 1200px;
 
   opacity: 0;
-  transform: translateY(-60px) rotate(-12deg);
-  animation: dealCard .6s cubic-bezier(.22, 1, .36, 1) forwards;
+  animation: dealCard .4s forwards;
 
   transition: transform .25s ease, filter .25s ease;
   will-change: transform, opacity;
 }
 
-/* Entrada */
 @keyframes dealCard {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
   to {
     opacity: 1;
-    transform: translateY(0) rotate(0deg);
+    transform: translateY(0);
   }
 }
 
-/* Hover global (somente se não for static e não estiver selecionado) */
 .card-entry:not(.static):not(.selected):hover {
   transform: translateY(-6px) scale(1.06);
   filter: brightness(1.06);

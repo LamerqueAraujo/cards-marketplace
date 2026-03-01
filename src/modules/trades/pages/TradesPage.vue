@@ -1,332 +1,166 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
-import {
-  getTrades,
-  mapTradeToCardModel,
-  createTrade,
-  deleteTrade
-} from '../services/trade.service'
+import { ref, onMounted } from 'vue'
+import AppPageLayout from 'src/shared/ui/layout/AppPageLayout.vue'
 import TradeCard from '../components/TradeCard.vue'
-import type { TradeCardModel } from '../types/trade-card.model'
-import type { UserCard } from 'src/modules/cards/types/cards.types'
-import { getCards, getMyCards } from 'src/modules/cards/services/cards.service'
-import { toggleSelection } from 'src/shared/utils/selection.utils'
-import type { GetCardsResponse } from 'src/modules/cards/types/cards.response'
-import LoadingSkeleton from 'src/shared/ui/components/LoadingSkeleton.vue'
-import EmptyState from 'src/shared/ui/components/EmptyState.vue'
-import CardThumbnail from 'src/shared/ui/components/CardThumbnail.vue'
+import TradeCreateDialog from '../components/TradeCreateDialog.vue'
+import TradeDetailsDialog from '../components/TradeDetailsDialog.vue'
+import { useTrades } from '../composables/useTrades'
+import LoadingState from 'src/shared/ui/feedback/LoadingState.vue'
+import ErrorState from 'src/shared/ui/feedback/ErrorState.vue'
+import EmptyState from 'src/shared/ui/feedback/EmptyState.vue'
+import SurfaceCard from 'src/shared/ui/base/SurfaceCard.vue'
+import type { TradeCardModel } from '../types/trade-card.model.types'
 
-const trades = ref<TradeCardModel[]>([])
-const loading = ref(false)
-const error = ref('')
-const page = ref(1)
-const rpp = 10
-const hasMore = ref(false)
 const showCreateTradeDialog = ref(false)
+const showDetails = ref(false)
+const selectedTrade = ref<TradeCardModel | null>(null)
 
-const myCards = ref<UserCard[]>([])
-const loadingMyCards = ref(false)
-const myCardsError = ref('')
-
-const availableCards = ref<UserCard[]>([])
-const loadingAvailable = ref(false)
-const availableError = ref('')
-
-const selectedOfferingIds = ref<string[]>([])
-const selectedReceivingIds = ref<string[]>([])
-
-const creatingTrade = ref(false)
-
-const isTradeValid = computed(() =>
-  selectedOfferingIds.value.length > 0 &&
-  selectedReceivingIds.value.length > 0
-)
-
-async function fetchTrades() {
-  try {
-    loading.value = true
-
-    const response = await getTrades(page.value, rpp)
-    const mapped = response.list.map(mapTradeToCardModel)
-
-    if (page.value === 1) {
-      trades.value = mapped
-    } else {
-      trades.value.push(...mapped)
-    }
-
-    hasMore.value = response.more
-  } catch {
-    error.value = 'Erro ao carregar trades'
-  } finally {
-    loading.value = false
-  }
-}
-
-function loadMore() {
-  page.value++
-  void fetchTrades()
-}
+const {
+  trades,
+  loading,
+  error,
+  hasMore,
+  loadMore,
+  deleteTradeById,
+  fetchTrades
+} = useTrades()
 
 function openCreateTradeDialog() {
   showCreateTradeDialog.value = true
-  selectedOfferingIds.value = []
-  selectedReceivingIds.value = []
-
-  void fetchMyCardsForTrade()
-  void fetchAvailableCardsForTrade()
 }
 
-async function fetchMyCardsForTrade() {
-  try {
-    loadingMyCards.value = true
-    myCardsError.value = ''
-
-    const response = await getMyCards()
-    myCards.value = response
-  } catch {
-    myCardsError.value = 'Erro ao carregar suas cartas'
-  } finally {
-    loadingMyCards.value = false
-  }
+function onOpenDetails(trade: TradeCardModel) {
+  selectedTrade.value = trade
+  showDetails.value = true
 }
 
-async function fetchAvailableCardsForTrade() {
-  try {
-    loadingAvailable.value = true
-    availableError.value = ''
-
-    const response: GetCardsResponse = await getCards()
-    availableCards.value = response.list
-  } catch {
-    availableError.value = 'Erro ao carregar cartas disponíveis'
-  } finally {
-    loadingAvailable.value = false
-  }
+function closeDetails() {
+  showDetails.value = false
+  selectedTrade.value = null
 }
 
-function toggleOffering(cardId: string) {
-  selectedOfferingIds.value =
-    toggleSelection(selectedOfferingIds.value, cardId)
+async function onCancelTrade(tradeId: string) {
+  await deleteTradeById(tradeId)
+  if (selectedTrade.value?.id === tradeId) closeDetails()
 }
 
-function toggleReceiving(cardId: string) {
-  selectedReceivingIds.value =
-    toggleSelection(selectedReceivingIds.value, cardId)
-}
-
-function buildTradePayload() {
-  const cards = [
-    ...selectedOfferingIds.value.map(id => ({
-      cardId: id,
-      type: 'OFFERING' as const
-    })),
-    ...selectedReceivingIds.value.map(id => ({
-      cardId: id,
-      type: 'RECEIVING' as const
-    }))
-  ]
-
-  return { cards }
-}
-
-async function handleCreateTrade() {
-  if (!isTradeValid.value) return
-
-  try {
-    creatingTrade.value = true
-
-    const payload = buildTradePayload()
-    await createTrade(payload)
-
-    showCreateTradeDialog.value = false
-    selectedOfferingIds.value = []
-    selectedReceivingIds.value = []
-
-    page.value = 1
-    await fetchTrades()
-  } catch {
-    console.error('Erro ao criar trade')
-  } finally {
-    creatingTrade.value = false
-  }
-}
-
-async function handleDeleteTrade(tradeId: string) {
-  const confirmed = confirm('Deseja cancelar esta troca?')
-  if (!confirmed) return
-
-  try {
-    await deleteTrade(tradeId)
-    trades.value = trades.value.filter(t => t.id !== tradeId)
-  } catch {
-    console.error('Erro ao deletar trade')
-  }
-}
-
-onMounted(fetchTrades)
+onMounted(() => {
+  void fetchTrades(true)
+})
 </script>
 
 <template>
-  <q-page class="q-pa-md">
-
-    <!-- Page Header -->
-    <div class="page-header">
-      <div>
-        <div class="page-title">
-          Trocas
-        </div>
-        <div class="page-subtitle">
-          Trocas ativas do marketplace
-        </div>
-      </div>
-
+  <AppPageLayout title="Trocas" subtitle="Trocas ativas do marketplace">
+    <template #actions>
       <q-btn label="Criar troca" color="primary" icon="add" @click="openCreateTradeDialog" />
-    </div>
+    </template>
 
-    <!-- Loading -->
-    <LoadingSkeleton v-if="loading" type="list" />
+    <LoadingState v-if="loading && trades.length === 0" type="grid" />
 
-    <!-- Error -->
-    <div v-else-if="error">
-      {{ error }}
-    </div>
+    <ErrorState v-else-if="error" :title="error" />
 
-    <!-- Empty -->
     <EmptyState v-else-if="trades.length === 0" icon="swap_horiz" title="Nenhuma troca disponível"
       description="Seja o primeiro a criar uma troca." />
 
-    <!-- List -->
-    <div v-else>
-      <TradeCard v-for="trade in trades" :key="trade.id" :trade="trade" @delete="handleDeleteTrade" />
+    <div v-else class="trade-grid">
+      <TradeCard v-for="trade in trades" :key="trade.id" :trade="trade" @delete="deleteTradeById"
+        @open-details="onOpenDetails" />
+
+      <SurfaceCard v-if="hasMore" class="load-more-card" @click="loadMore" role="button" tabindex="0">
+        <div class="load-more-content">
+          <div class="load-more-icon">
+            <q-icon name="add" size="28px" />
+          </div>
+
+          <div class="load-more-text">
+            <div class="load-more-title">Carregar mais</div>
+            <div class="load-more-subtitle">Veja mais trocas disponíveis no marketplace</div>
+          </div>
+        </div>
+      </SurfaceCard>
     </div>
 
-    <!-- Pagination -->
-    <div v-if="hasMore" class="text-center q-mt-md">
-      <q-btn label="Carregar mais" color="primary" outline @click="loadMore" :loading="loading" />
-    </div>
+    <TradeCreateDialog v-model="showCreateTradeDialog" />
 
-    <!-- Create Trade Dialog -->
-    <q-dialog v-model="showCreateTradeDialog">
-      <q-card class="trade-dialog">
-
-        <q-card-section class="trade-dialog-header">
-          <div>
-            <div class="text-h6">Criar nova troca</div>
-            <div class="text-caption text-grey-5">
-              Escolha cartas para oferecer e receber
-            </div>
-          </div>
-
-          <q-btn flat round dense icon="close" @click="showCreateTradeDialog = false" />
-        </q-card-section>
-
-        <q-separator />
-
-        <q-card-section class="trade-dialog-content">
-
-          <div class="section-title">
-            Suas cartas (oferecendo)
-          </div>
-
-          <LoadingSkeleton v-if="loadingMyCards" type="grid" />
-
-          <div v-else-if="myCardsError">
-            {{ myCardsError }}
-          </div>
-
-          <div v-else-if="myCards.length === 0">
-            Você não possui cartas para oferecer.
-          </div>
-
-          <div v-else class="trade-cards-grid">
-            <CardThumbnail v-for="card in myCards" :key="card.id" :image-url="card.imageUrl" :name="card.name"
-              :selected="selectedOfferingIds.includes(card.id)" @click="toggleOffering(card.id)" />
-          </div>
-
-          <q-separator class="q-my-lg" />
-
-          <div class="section-title">
-            Cartas desejadas (recebendo)
-          </div>
-
-          <LoadingSkeleton v-if="loadingAvailable" type="grid" />
-
-          <div v-else-if="availableError">
-            {{ availableError }}
-          </div>
-
-          <div v-else class="trade-cards-grid">
-            <CardThumbnail v-for="card in availableCards" :key="card.id" :image-url="card.imageUrl" :name="card.name"
-              :selected="selectedReceivingIds.includes(card.id)" @click="toggleReceiving(card.id)" />
-          </div>
-
-        </q-card-section>
-
-        <q-separator />
-
-        <q-card-actions align="right">
-          <q-btn flat label="Cancelar" @click="showCreateTradeDialog = false" />
-          <q-btn label="Criar troca" color="primary" :disable="!isTradeValid" :loading="creatingTrade"
-            @click="handleCreateTrade" />
-        </q-card-actions>
-
-      </q-card>
-    </q-dialog>
-
-  </q-page>
+    <!-- MODAL DE DETALHES -->
+    <TradeDetailsDialog v-model="showDetails" :trade="selectedTrade" @update:model-value="(v) => !v && closeDetails()"
+      @cancel-trade="onCancelTrade" @request-trade="(id) => console.log('request-trade', id)"
+      @preview-card="(cardId) => console.log('preview-card', cardId)" />
+  </AppPageLayout>
 </template>
 
 <style scoped>
-.page-header {
+.trade-grid {
+  margin-top: 18px;
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  align-items: stretch;
+}
+
+@media (max-width: 980px) {
+  .trade-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.load-more-card {
+  cursor: pointer;
+  min-height: 220px;
+
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  justify-content: center;
+
+  border: 2px dashed rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.02);
+
+  transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease;
 }
 
-.page-title {
-  font-size: 22px;
-  font-weight: 600;
-  color: #ffffff;
+.load-more-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(138, 43, 226, 0.6);
+  background: rgba(138, 43, 226, 0.06);
 }
 
-.page-subtitle {
-  font-size: 13px;
-  color: #8b8bb3;
-  margin-top: 2px;
+.load-more-content {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px;
 }
 
-.section-title {
-  font-size: 14px;
-  font-weight: 500;
-  margin-bottom: 12px;
-  color: #d0d0ff;
+.load-more-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 999px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: var(--gradient-primary);
+  color: white;
+
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.45);
 }
 
-.trade-dialog {
-  width: 900px;
-  max-width: 92vw;
-  height: 80vh;
+.load-more-text {
   display: flex;
   flex-direction: column;
-  background: #1a1a2e;
+  gap: 4px;
 }
 
-.trade-dialog-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.load-more-title {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text-primary);
+  letter-spacing: 0.2px;
 }
 
-.trade-dialog-content {
-  overflow-y: auto;
-  padding: 12px 4px 0;
-}
-
-.trade-cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 14px;
+.load-more-subtitle {
+  font-size: 12px;
+  color: var(--text-secondary);
 }
 </style>
