@@ -17,11 +17,7 @@ const emit = defineEmits<{
 }>()
 
 const rarity = computed(() => getCardRarity(props.card.id))
-
-// Interativo apenas se NÃO for selectable e NÃO for static
-const isInteractive = computed(() =>
-  !props.selectable && !props.static
-)
+const isInteractive = computed(() => !props.selectable && !props.static)
 
 const tiltX = ref(0)
 const tiltY = ref(0)
@@ -52,6 +48,14 @@ function handleClick() {
   emit('click')
 }
 
+function handleKeydown(e: KeyboardEvent) {
+  if (!isInteractive.value) return
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault()
+    emit('click')
+  }
+}
+
 onMounted(() => {
   if (props.static) {
     revealed.value = true
@@ -67,16 +71,14 @@ onMounted(() => {
 <template>
   <div class="card-entry" :class="{ selected, static }" :style="{ animationDelay: `${index * 80}ms` }">
     <div class="card-flip" :class="{ flipped: revealed }">
-
-      <!-- BACK -->
       <div class="card-face card-back">
         <img :src="cardBack" alt="Card back" />
       </div>
 
-      <!-- FRONT -->
       <div class="card-face card-front">
         <div class="card-tilt" :class="[`rarity-${rarity}`, { selectable }]" @mousemove="handleMouseMove"
-          @mouseleave="resetTilt" @click="handleClick" :style="isInteractive
+          @mouseleave="resetTilt" @click="handleClick" @keydown="handleKeydown" :tabindex="isInteractive ? 0 : -1"
+          :role="isInteractive ? 'button' : undefined" :aria-label="`Ver carta ${card.name}`" :style="isInteractive
             ? { transform: `rotateX(${tiltX}deg) rotateY(${tiltY}deg)` }
             : undefined">
           <img :src="card.imageUrl" :alt="card.name" width="421" height="614" loading="lazy" />
@@ -86,7 +88,6 @@ onMounted(() => {
           </div>
         </div>
       </div>
-
     </div>
   </div>
 </template>
@@ -99,9 +100,9 @@ onMounted(() => {
   perspective: 1200px;
 
   opacity: 0;
-  animation: dealCard .4s forwards;
+  animation: dealCard 220ms var(--ease-smooth) forwards;
 
-  transition: transform .25s ease, filter .25s ease;
+  transition: transform 220ms var(--ease-smooth), filter 220ms var(--ease-smooth);
   will-change: transform, opacity;
 }
 
@@ -118,17 +119,16 @@ onMounted(() => {
 }
 
 .card-entry:not(.static):not(.selected):hover {
-  transform: translateY(-6px) scale(1.06);
+  transform: translateY(-6px) scale(1.045);
   filter: brightness(1.06);
 }
 
-/* Flip */
 .card-flip {
   position: relative;
   width: 100%;
   height: 100%;
   transform-style: preserve-3d;
-  transition: transform .6s cubic-bezier(.4, .2, .2, 1);
+  transition: transform 520ms var(--ease-smooth);
 }
 
 .card-flip.flipped {
@@ -153,11 +153,22 @@ onMounted(() => {
 .card-tilt {
   width: 100%;
   height: 100%;
-  transition:
-    transform .15s ease,
-    box-shadow .25s ease,
-    filter .25s ease;
   transform-style: preserve-3d;
+
+  transition:
+    transform 140ms var(--ease-smooth),
+    box-shadow 220ms var(--ease-smooth),
+    filter 220ms var(--ease-smooth);
+
+  outline: none;
+  will-change: transform;
+}
+
+.card-tilt:focus-visible {
+  box-shadow:
+    var(--shadow-card-base),
+    0 0 0 2px var(--focus-ring),
+    0 0 22px var(--glow-primary);
 }
 
 .card-face img {
@@ -167,54 +178,52 @@ onMounted(() => {
   display: block;
 }
 
-/* RARIDADE */
 .rarity-rare {
   box-shadow:
-    0 14px 25px rgba(0, 0, 0, .7),
-    0 0 20px rgba(30, 144, 255, .25);
+    var(--shadow-card-base),
+    0 0 20px var(--glow-rare);
 }
 
 .rarity-epic {
   box-shadow:
-    0 14px 25px rgba(0, 0, 0, .7),
-    0 0 24px rgba(138, 43, 226, .35);
+    var(--shadow-card-base),
+    0 0 24px var(--glow-epic);
 }
 
 .rarity-legendary {
   box-shadow:
-    0 14px 25px rgba(0, 0, 0, .7),
-    0 0 30px rgba(255, 215, 0, .45);
+    var(--shadow-card-base),
+    0 0 30px var(--glow-legendary);
 }
 
-/* Hover adicional de profundidade */
 .card-entry:not(.static):not(.selected):hover .card-tilt {
   box-shadow:
-    0 0 0 2px rgba(138, 43, 226, .4),
-    0 30px 50px rgba(0, 0, 0, .8);
+    var(--shadow-card-base),
+    0 0 0 2px rgba(139, 92, 246, 0.40),
+    0 0 28px var(--glow-primary);
 }
 
-/* Selecionado */
 .card-entry.selected .card-tilt {
-  transform: scale(1.07);
+  transform: scale(1.06);
   box-shadow:
-    0 0 0 3px var(--primary),
-    0 0 25px rgba(138, 43, 226, .6),
-    0 30px 50px rgba(0, 0, 0, .8);
+    0 0 0 3px var(--focus-ring),
+    0 0 25px rgba(139, 92, 246, 0.55),
+    0 30px 50px rgba(0, 0, 0, 0.80);
 }
 
-/* Overlay seleção */
 .selection-overlay {
   position: absolute;
   inset: 0;
+
   background: linear-gradient(to bottom,
-      rgba(138, 43, 226, .15),
-      rgba(138, 43, 226, .25));
+      rgba(139, 92, 246, 0.14),
+      rgba(139, 92, 246, 0.26));
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  animation: fadeIn .18s ease;
+  animation: fadeIn 180ms var(--ease-smooth);
 }
 
 @keyframes fadeIn {
@@ -224,6 +233,23 @@ onMounted(() => {
 
   to {
     opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-entry {
+    animation: none;
+    opacity: 1;
+  }
+
+  .card-flip,
+  .card-tilt {
+    transition: none;
+  }
+
+  .card-entry:hover {
+    transform: none;
+    filter: none;
   }
 }
 </style>

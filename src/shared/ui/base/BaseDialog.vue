@@ -1,35 +1,52 @@
 <script setup lang="ts">
-defineProps<{
+import { computed } from 'vue'
+import SurfaceCard from './SurfaceCard.vue'
+import AppIconButton from './AppIconButton.vue'
+
+const props = withDefaults(defineProps<{
   modelValue: boolean
-  title?: string | undefined
-  subtitle?: string | undefined
-  width?: string | undefined
-}>()
+  title?: string
+  subtitle?: string
+  width?: string
+  maxHeight?: string
+  showClose?: boolean
+}>(), {
+  width: '960px',
+  maxHeight: '86vh',
+  showClose: true
+})
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: boolean): void
+  (e: 'update:modelValue', v: boolean): void
+  (e: 'close'): void
 }>()
 
+const model = computed({
+  get: () => props.modelValue,
+  set: (v: boolean) => emit('update:modelValue', v)
+})
+
 function close() {
-  emit('update:modelValue', false)
+  model.value = false
+  emit('close')
 }
 </script>
 
 <template>
-  <q-dialog :model-value="modelValue" @update:model-value="emit('update:modelValue', $event)" transition-show="fade"
-    transition-hide="fade">
-    <div class="base-dialog" :style="{ width: width || '1000px' }">
-
+  <q-dialog v-model="model" transition-show="fade" transition-hide="fade">
+    <SurfaceCard class="base-dialog" padding="none" variant="elevated" :style="{ width, maxHeight }">
       <!-- HEADER -->
-      <div class="dialog-header">
-        <div>
-          <div class="dialog-title">{{ title }}</div>
-          <div v-if="subtitle" class="dialog-subtitle">
-            {{ subtitle }}
-          </div>
+      <div v-if="title || subtitle || $slots.header || showClose" class="dialog-header">
+        <div class="dialog-titles">
+          <slot name="header">
+            <div v-if="title" class="dialog-title text-display">{{ title }}</div>
+            <div v-if="subtitle" class="dialog-subtitle">{{ subtitle }}</div>
+          </slot>
         </div>
 
-        <q-btn flat round dense icon="close" @click="close" />
+        <div v-if="showClose" class="dialog-close">
+          <AppIconButton icon="close" variant="ghost" size="md" @click="close" />
+        </div>
       </div>
 
       <!-- BODY -->
@@ -41,59 +58,57 @@ function close() {
       <div v-if="$slots.footer" class="dialog-footer">
         <slot name="footer" />
       </div>
-
-    </div>
+    </SurfaceCard>
   </q-dialog>
 </template>
 
 <style scoped lang="scss">
 .base-dialog {
   max-width: 95vw;
-  height: 80vh;
-
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-
-  border-radius: 20px;
-  background: #14142a;
-
-  box-shadow:
-    0 40px 100px rgba(0, 0, 0, .9),
-    inset 0 0 0 1px rgba(255, 255, 255, .04);
-
-  overflow: hidden;
 }
 
-/* HEADER */
 .dialog-header {
-  padding: 22px 28px;
+  padding: var(--space-5) var(--space-6);
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  gap: var(--space-4);
 
   background: linear-gradient(to right,
-      rgba(75, 0, 130, .15),
-      rgba(30, 144, 255, .05));
+      rgba(139, 92, 246, 0.14),
+      rgba(30, 144, 255, 0.05));
 
-  border-bottom: 1px solid rgba(255, 255, 255, .05);
+  border-bottom: 1px solid var(--surface-border);
+}
+
+.dialog-titles {
+  min-width: 0;
 }
 
 .dialog-title {
-  font-size: 20px;
-  font-weight: 600;
-  color: white;
+  font-size: var(--text-title);
+  font-weight: 800;
+  margin: 0;
 }
 
 .dialog-subtitle {
-  font-size: 13px;
-  color: rgba(255, 255, 255, .6);
+  margin-top: var(--space-2);
+  font-size: var(--text-body);
+  color: var(--text-muted);
 }
 
-/* BODY */
+.dialog-close {
+  flex: 0 0 auto;
+}
+
 .dialog-body {
   flex: 1;
-  overflow-y: auto;
-  padding: 24px 28px;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--space-6);
 }
 
 .dialog-body::-webkit-scrollbar {
@@ -101,18 +116,16 @@ function close() {
 }
 
 .dialog-body::-webkit-scrollbar-thumb {
-  background: rgba(138, 43, 226, .6);
+  background: rgba(139, 92, 246, 0.55);
   border-radius: 6px;
 }
 
-/* FOOTER */
 .dialog-footer {
-  padding: 18px 28px;
+  padding: var(--space-5) var(--space-6);
+  border-top: 1px solid var(--surface-border);
   display: flex;
   justify-content: flex-end;
-  gap: 14px;
-
-  border-top: 1px solid rgba(255, 255, 255, .05);
-  background: rgba(0, 0, 0, .25);
+  gap: var(--space-3);
+  background: rgba(0, 0, 0, 0.22);
 }
 </style>

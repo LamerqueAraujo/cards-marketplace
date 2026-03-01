@@ -1,42 +1,37 @@
 <script setup lang="ts">
+import SurfaceCard from 'src/shared/ui/base/SurfaceCard.vue'
 </script>
 
 <template>
-  <div class="auth-card">
+  <SurfaceCard class="auth-card" padding="lg">
     <slot />
-  </div>
+  </SurfaceCard>
 </template>
 
 <style scoped lang="scss">
 .auth-card {
-  width: 100%;
-  padding: 40px 32px;
-  border-radius: 20px;
-
-  background: rgba(26, 26, 46, 0.85);
-  backdrop-filter: blur(12px);
-
-  border: 1px solid rgba(75, 0, 130, 0.25);
+  width: min(460px, 92vw);
+  margin: 0 auto;
 
   box-shadow:
-    0 0 60px rgba(75, 0, 130, 0.15),
-    0 30px 60px rgba(0, 0, 0, 0.5);
+    0 0 70px rgba(139, 92, 246, 0.16),
+    0 30px 60px rgba(0, 0, 0, 0.55);
 
-  transition: transform .2s ease, box-shadow .2s ease;
+  transition:
+    transform 220ms var(--ease-smooth),
+    box-shadow 220ms var(--ease-smooth);
 }
 
 .auth-card:hover {
   transform: translateY(-2px);
   box-shadow:
-    0 0 80px rgba(75, 0, 130, 0.25),
-    0 40px 70px rgba(0, 0, 0, 0.6);
+    0 0 90px rgba(139, 92, 246, 0.22),
+    0 40px 72px rgba(0, 0, 0, 0.62);
 }
 
-/* Mobile */
 @media (max-width: 600px) {
   .auth-card {
-    padding: 32px 24px;
-    border-radius: 16px;
+    width: min(420px, 92vw);
   }
 }
 </style>

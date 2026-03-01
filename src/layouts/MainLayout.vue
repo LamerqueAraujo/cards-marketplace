@@ -2,7 +2,7 @@
 import { ref, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useQuasar } from 'quasar'
-import PageHeader from 'src/shared/ui/components/PageHeader.vue'
+import PageHeader from 'src/shared/ui/layout/PageHeader.vue'
 import AppHeader from 'src/shared/layout/AppHeader.vue'
 import AppSidebar from 'src/shared/layout/AppSidebar.vue'
 

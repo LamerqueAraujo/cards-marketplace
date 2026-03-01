@@ -2,67 +2,71 @@
 import { computed } from 'vue'
 import type { BaseCard } from 'src/shared/types/card.types'
 import CardPreviewImage from './CardPreviewImage.vue'
+import AppSeparator from 'src/shared/ui/base/AppSeparator.vue'
+import SurfaceCard from 'src/shared/ui/base/SurfaceCard.vue'
 
 const props = defineProps<{
   card: BaseCard
 }>()
 
-const formattedDescription = computed(() => {
-  return props.card.description ?? ''
-})
+const formattedDescription = computed(() => props.card.description ?? '')
 </script>
 
 <template>
-  <div class="preview-vertical">
+  <SurfaceCard class="preview" padding="lg" variant="subtle">
+    <div class="preview__content">
+      <CardPreviewImage :image-url="card.imageUrl" size="lg" />
 
-    <CardPreviewImage :image-url="card.imageUrl" />
+      <h2 class="preview__title text-display">
+        {{ card.name }}
+      </h2>
 
-    <h2 class="preview-title">
-      {{ card.name }}
-    </h2>
+      <div v-if="formattedDescription" class="preview__divider">
+        <AppSeparator :spaced="false" />
+      </div>
 
-    <div class="preview-divider" />
-
-    <p class="preview-description">
-      {{ formattedDescription }}
-    </p>
-
-  </div>
+      <p v-if="formattedDescription" class="preview__description">
+        {{ formattedDescription }}
+      </p>
+    </div>
+  </SurfaceCard>
 </template>
 
-<style scoped>
-.preview-vertical {
+<style scoped lang="scss">
+.preview {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.preview__content {
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-
-  padding: 28px 24px;
-  max-width: 640px;
-  margin: 0 auto;
+  gap: var(--space-4);
 }
 
-.preview-title {
+.preview__title {
+  margin: 0;
   font-size: 26px;
-  font-weight: 700;
-  margin-bottom: 14px;
-  color: var(--text-primary);
-  letter-spacing: 0.4px;
+  font-weight: 800;
+  max-width: 560px;
+  line-height: 1.15;
 }
 
-.preview-divider {
-  width: 64px;
-  height: 3px;
-  border-radius: 3px;
-  margin-bottom: 22px;
-  background: var(--gradient-primary);
+.preview__divider {
+  width: 120px;
+  opacity: 0.9;
 }
 
-.preview-description {
-  line-height: 1.8;
-  font-size: 15px;
-  color: var(--text-secondary);
-  max-width: 520px;
+.preview__description {
+  margin: 0;
+  max-width: 560px;
+
+  font-size: var(--text-body);
+  line-height: 1.75;
+  color: var(--text-muted);
   white-space: pre-line;
 }
 </style>
