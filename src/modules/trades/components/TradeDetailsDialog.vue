@@ -48,8 +48,8 @@ function onCardClick(cardId: string) {
 </script>
 
 <template>
-  <BaseDialog :model-value="modelValue" @update:model-value="emit('update:modelValue', $event)"
-    title="Detalhes da troca" :subtitle="subtitle" width="1120px">
+  <BaseDialog :model-value="modelValue" width="1120px" title="Detalhes da troca" v-bind="subtitle ? { subtitle } : {}"
+    @update:model-value="emit('update:modelValue', $event)">
     <div v-if="trade" class="trade-details">
       <!-- COLUNA: OFERECENDO -->
       <SurfaceCard class="col">

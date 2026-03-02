@@ -2,8 +2,8 @@
 import { useRouter } from 'vue-router'
 import { onMounted, ref } from 'vue'
 import { getDashboardSummary } from '../services/dashboard.service'
-import SurfaceCard from 'src/shared/ui/base/SurfaceCard.vue'
-import StatCard from 'src/shared/ui/base/StatCard.vue'
+import AppCard from 'src/shared/ui/base/AppCard.vue'
+import AppStat from 'src/shared/ui/base/AppStat.vue'
 import LoadingState from 'src/shared/ui/feedback/LoadingState.vue'
 import ErrorState from 'src/shared/ui/feedback/ErrorState.vue'
 
@@ -45,15 +45,15 @@ onMounted(async () => {
       </ErrorState>
 
       <template v-else>
-        <StatCard :value="summary.totalCards" label="Cartas na coleção" />
-        <StatCard :value="summary.activeTrades" label="Trocas ativas" highlight />
-        <StatCard :value="summary.completedTrades" label="Trocas concluídas" />
-        <StatCard :value="summary.rareCards" label="Cartas raras" />
+        <AppStat :value="summary.totalCards" label="Cartas na coleção" />
+        <AppStat :value="summary.activeTrades" label="Trocas ativas" highlight />
+        <AppStat :value="summary.completedTrades" label="Trocas concluídas" />
+        <AppStat :value="summary.rareCards" label="Cartas raras" />
       </template>
 
     </section>
 
-    <SurfaceCard padding="lg" class="home-hero">
+    <AppCard padding="lg" class="home-hero">
 
       <div class="hero-content">
         <div class="hero-title">
@@ -71,11 +71,11 @@ onMounted(async () => {
         </div>
       </div>
 
-    </SurfaceCard>
+    </AppCard>
 
     <section class="home-sections">
 
-      <SurfaceCard clickable padding="md">
+      <AppCard clickable padding="md">
 
         <div>
           <div class="section-title">
@@ -89,9 +89,9 @@ onMounted(async () => {
 
         <q-btn flat label="Ver todas" color="primary" @click="router.push({ name: 'trades' })" />
 
-      </SurfaceCard>
+      </AppCard>
 
-      <SurfaceCard clickable padding="md">
+      <AppCard clickable padding="md">
 
         <div>
           <div class="section-title">
@@ -105,7 +105,7 @@ onMounted(async () => {
 
         <q-btn flat label="Abrir inventário" color="primary" @click="router.push({ name: 'my-cards' })" />
 
-      </SurfaceCard>
+      </AppCard>
 
     </section>
 

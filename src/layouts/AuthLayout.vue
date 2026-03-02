@@ -14,7 +14,7 @@
 
 <style scoped lang="scss">
 .auth-layout {
-  background: $dark-page;
+  background: var(--q-dark-page);
 }
 
 .auth-page {

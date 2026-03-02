@@ -87,7 +87,7 @@ onBeforeUnmount(() => {
   <ErrorState v-else-if="error" :title="error" />
 
   <EmptyState v-else-if="cards.length === 0 && !minSlots" icon="style" :title="emptyTitle || 'Nenhuma carta encontrada'"
-    :description="emptyDescription" />
+    v-bind="emptyDescription ? { description: emptyDescription } : {}" />
 
   <!-- Grid com ou sem slots -->
   <div v-else class="cards-grid">

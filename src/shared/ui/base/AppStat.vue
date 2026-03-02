@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import SurfaceCard from '../base/SurfaceCard.vue'
+import AppCard from '../base/AppCard.vue'
 
 withDefaults(defineProps<{
   value: string | number
@@ -11,7 +11,7 @@ withDefaults(defineProps<{
 </script>
 
 <template>
-  <SurfaceCard padding="sm" :variant="highlight ? 'elevated' : 'subtle'" class="app-stat">
+  <AppCard padding="sm" :variant="highlight ? 'elevated' : 'subtle'" class="app-stat">
     <div class="app-stat__value">
       {{ value }}
     </div>
@@ -19,7 +19,7 @@ withDefaults(defineProps<{
     <div class="app-stat__label">
       {{ label }}
     </div>
-  </SurfaceCard>
+  </AppCard>
 </template>
 
 <style scoped lang="scss">

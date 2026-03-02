@@ -109,37 +109,18 @@ h2 { font-size: var(--text-title); font-weight: 700; }
   margin-top: var(--space-2);
 }
 
-input:-webkit-autofill,
-input:-webkit-autofill:hover,
-input:-webkit-autofill:focus,
-textarea:-webkit-autofill,
-textarea:-webkit-autofill:hover,
-textarea:-webkit-autofill:focus,
-select:-webkit-autofill,
-select:-webkit-autofill:hover,
-select:-webkit-autofill:focus {
+.q-field input:-webkit-autofill,
+.q-field input:-webkit-autofill:hover,
+.q-field input:-webkit-autofill:focus,
+.q-field textarea:-webkit-autofill,
+.q-field textarea:-webkit-autofill:hover,
+.q-field textarea:-webkit-autofill:focus,
+.q-field select:-webkit-autofill,
+.q-field select:-webkit-autofill:hover,
+.q-field select:-webkit-autofill:focus {
   -webkit-text-fill-color: rgba(255, 255, 255, 0.92) !important;
   caret-color: rgba(255, 255, 255, 0.92);
-  -webkit-box-shadow: 0 0 0 1000px rgba(255, 255, 255, 0.03) inset !important;
-  box-shadow: 0 0 0 1000px rgba(255, 255, 255, 0.03) inset !important;
-  border-radius: var(--radius-md);
+  -webkit-box-shadow: 0 0 0 1000px var(--surface-1) inset !important;
+  box-shadow: 0 0 0 1000px var(--surface-1) inset !important;
   transition: background-color 9999s ease-in-out 0s;
-
-.app-input :deep(input:-webkit-autofill),
-.app-input :deep(input:-webkit-autofill:hover),
-.app-input :deep(input:-webkit-autofill:focus),
-.app-input :deep(textarea:-webkit-autofill),
-.app-input :deep(textarea:-webkit-autofill:hover),
-.app-input :deep(textarea:-webkit-autofill:focus) {
-  -webkit-text-fill-color: rgba(255, 255, 255, 0.92) !important;
-  caret-color: rgba(255, 255, 255, 0.92);
-
-  /* This is the key part */
-  -webkit-box-shadow: 0 0 0 1000px rgba(255, 255, 255, 0.03) inset !important;
-  box-shadow: 0 0 0 1000px rgba(255, 255, 255, 0.03) inset !important;
-
-  border-radius: var(--radius-md);
-  transition: background-color 9999s ease-in-out 0s;
-}
-
 }

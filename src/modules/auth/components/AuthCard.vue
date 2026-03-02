@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import SurfaceCard from 'src/shared/ui/base/SurfaceCard.vue'
+import AppCard from '../../../shared/ui/base/AppCard.vue'
 </script>
 
 <template>
-  <SurfaceCard class="auth-card" padding="lg">
+  <AppCard class="auth-card" padding="lg" variant="elevated">
     <slot />
-  </SurfaceCard>
+  </AppCard>
 </template>
 
 <style scoped lang="scss">
@@ -22,16 +22,15 @@ import SurfaceCard from 'src/shared/ui/base/SurfaceCard.vue'
     box-shadow 220ms var(--ease-smooth);
 }
 
-.auth-card:hover {
-  transform: translateY(-2px);
+.auth-card--focus {
+  transform: translateY(-2px) scale(1.01);
   box-shadow:
-    0 0 90px rgba(139, 92, 246, 0.22),
-    0 40px 72px rgba(0, 0, 0, 0.62);
+    0 0 100px rgba(139, 92, 246, 0.28),
+    0 44px 80px rgba(0, 0, 0, 0.70);
 }
 
-@media (max-width: 600px) {
-  .auth-card {
-    width: min(420px, 92vw);
-  }
+.auth-card--focus :deep(.brand-orb) {
+  box-shadow: 0 0 34px rgba(139, 92, 246, 0.28);
+  border-color: rgba(139, 92, 246, 0.38);
 }
 </style>

@@ -1,93 +1,72 @@
 <script setup lang="ts">
-import { computed, useAttrs } from 'vue'
-import { QInput, type QInputProps } from 'quasar'
+import type { QInputProps } from 'quasar'
 
-const props = withDefaults(defineProps<{
+withDefaults(defineProps<{
   modelValue: string | number | null
   label?: string
   type?: QInputProps['type']
   placeholder?: string
-  disable?: boolean
   hint?: string
   error?: boolean
   errorMessage?: string
+  disabled?: boolean
+  autocomplete?: string
 }>(), {
   type: 'text',
-  disable: false,
+  disabled: false,
   error: false
 })
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', v: string | number | null): void
+  (e: 'update:modelValue', value: string | number | null): void
+  (e: 'focus'): void
+  (e: 'blur'): void
 }>()
-
-const attrs = useAttrs()
-
-const inputProps = computed(() => ({
-  ...attrs,
-  dark: true,
-  filled: true,
-  hideBottomSpace: true
-}))
 </script>
 
 <template>
-  <q-input v-bind="inputProps" class="app-input" :model-value="modelValue" :label="label" :type="type"
-    :placeholder="placeholder" :disable="disable" :error="error" :error-message="errorMessage" :hint="hint"
-    @update:model-value="emit('update:modelValue', $event)" />
+  <q-input class="app-input" dark outlined :model-value="modelValue"
+    @update:model-value="emit('update:modelValue', $event)" :label="label" :type="type" :placeholder="placeholder"
+    :hint="hint" :error="error" :error-message="errorMessage" :disable="disabled" :autocomplete="autocomplete"
+    no-error-icon @focus="emit('focus')" @blur="emit('blur')" />
 </template>
 
 <style scoped lang="scss">
 .app-input :deep(.q-field__control) {
-  min-height: 46px;
-
+  border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(10px);
-
-  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-color: rgba(255, 255, 255, 0.10);
 
   transition:
     border-color 180ms var(--ease-smooth),
     box-shadow 180ms var(--ease-smooth),
-    filter 180ms var(--ease-smooth);
+    background-color 180ms var(--ease-smooth);
 }
 
-.app-input:not(.q-field--disabled):hover :deep(.q-field__control) {
-  border-color: rgba(255, 255, 255, 0.16);
-}
-
-.app-input.q-field--focused :deep(.q-field__control) {
-  border-color: rgba(139, 92, 246, 0.55);
-  box-shadow:
-    0 0 0 1px rgba(139, 92, 246, 0.30),
-    0 0 22px var(--glow-primary);
-}
-
-.app-input :deep(.q-field__label) {
-  color: rgba(255, 255, 255, 0.62);
-  font-weight: 600;
-  letter-spacing: 0.2px;
-}
-
-
-.app-input :deep(.q-field__native),
-.app-input :deep(input),
-.app-input :deep(textarea) {
+.app-input :deep(.q-field__native) {
   color: rgba(255, 255, 255, 0.92);
 }
 
-.app-input :deep(input::placeholder),
-.app-input :deep(textarea::placeholder) {
-  color: rgba(255, 255, 255, 0.35);
+.app-input :deep(.q-field__label) {
+  color: rgba(255, 255, 255, 0.55);
 }
 
-.app-input.q-field--error :deep(.q-field__control) {
-  border-color: rgba(239, 68, 68, 0.55);
-  box-shadow: 0 0 18px rgba(239, 68, 68, 0.18);
+.app-input :deep(.q-field--focused .q-field__control) {
+  border-color: rgba(139, 92, 246, 0.55);
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.22);
 }
 
-.app-input.q-field--disabled :deep(.q-field__control) {
-  opacity: 0.65;
-  filter: saturate(0.9);
+.app-input :deep(.q-field--focused .q-field__label) {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+/* hint + error */
+.app-input :deep(.q-field__bottom) {
+  padding-top: 6px;
+}
+
+.app-input :deep(.q-field__messages) {
+  color: var(--text-muted);
+  font-size: var(--text-caption);
 }
 </style>
