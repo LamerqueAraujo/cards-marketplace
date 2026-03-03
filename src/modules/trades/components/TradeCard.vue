@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import type { TradeCardModel } from '../types/trade-card.model.types'
 import { useAuthStore } from 'src/modules/auth/store/auth.store'
-import SurfaceCard from 'src/shared/ui/base/SurfaceCard.vue'
+import AppCard from 'src/shared/ui/base/AppCard.vue'
 import CardItem from '../../../shared/ui/data-display/CardItem.vue'
 
 const props = defineProps<{
@@ -43,7 +43,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <SurfaceCard class="trade-card">
+  <AppCard class="trade-card">
 
     <!-- HEADER -->
     <div class="trade-header">
@@ -102,7 +102,7 @@ const emit = defineEmits<{
 
     </div>
 
-  </SurfaceCard>
+  </AppCard>
 </template>
 
 <style scoped>

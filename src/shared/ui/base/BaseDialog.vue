@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import SurfaceCard from './SurfaceCard.vue'
+import AppCard from './AppCard.vue'
 import AppIconButton from './AppIconButton.vue'
 
 const props = withDefaults(defineProps<{
@@ -34,7 +34,7 @@ function close() {
 
 <template>
   <q-dialog v-model="model" transition-show="fade" transition-hide="fade">
-    <SurfaceCard class="base-dialog" padding="none" variant="elevated" :style="{ width, maxHeight }">
+    <AppCard class="base-dialog" padding="none" variant="elevated" :style="{ width, maxHeight }">
       <!-- HEADER -->
       <div v-if="title || subtitle || $slots.header || showClose" class="dialog-header">
         <div class="dialog-titles">
@@ -58,7 +58,7 @@ function close() {
       <div v-if="$slots.footer" class="dialog-footer">
         <slot name="footer" />
       </div>
-    </SurfaceCard>
+    </AppCard>
   </q-dialog>
 </template>
 

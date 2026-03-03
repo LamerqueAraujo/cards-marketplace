@@ -10,6 +10,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void
+  (e: 'created'): void
 }>()
 
 const {
@@ -31,6 +32,7 @@ const {
   resetSelection
 } = useCreateTrade({
   onSuccess: () => {
+    emit('created')
     emit('update:modelValue', false)
     resetSelection()
   }
@@ -85,9 +87,9 @@ watch(
     </div>
 
     <template #footer>
-      <q-btn flat label="Cancelar" @click="close" />
+      <AppButton label="Cancelar" variant="ghost" @click="close" />
 
-      <q-btn label="Criar troca" color="primary" :disable="!isTradeValid" :loading="creatingTrade"
+      <AppButton label="Criar troca" icon="add" :disabled="!isTradeValid" :loading="creatingTrade"
         @click="handleSubmit" />
     </template>
   </BaseDialog>

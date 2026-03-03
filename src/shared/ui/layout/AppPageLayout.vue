@@ -11,130 +11,189 @@ withDefaults(defineProps<{
 </script>
 
 <template>
-  <q-page class="app-page-layout">
+  <q-page class="app-page">
+    <div v-if="!hideHeader" class="app-page__header">
+      <div class="app-page__shell" :class="`app-page__shell--${maxWidth}`">
+        <div class="app-page__headerRow">
+          <div class="app-page__titles">
+            <slot name="title">
+              <h1 class="app-page__title text-display">{{ title }}</h1>
+            </slot>
 
-    <!-- HEADER -->
-    <div v-if="!hideHeader" class="page-header">
-      <div class="page-header__content" :class="`page-max-${maxWidth}`">
+            <slot name="subtitle">
+              <p v-if="subtitle" class="app-page__subtitle">{{ subtitle }}</p>
+            </slot>
+          </div>
 
-        <div class="page-header__titles">
-          <slot name="title">
-            <h1 class="page-title text-display">
-              {{ title }}
-            </h1>
-          </slot>
-
-          <slot name="subtitle">
-            <p v-if="subtitle" class="page-subtitle">
-              {{ subtitle }}
-            </p>
-          </slot>
+          <div v-if="$slots.actions" class="app-page__actions">
+            <slot name="actions" />
+          </div>
         </div>
-
-        <div v-if="$slots.actions" class="page-actions">
-          <slot name="actions" />
-        </div>
-
       </div>
+
+      <div class="app-page__headerDivider" />
     </div>
 
-    <!-- CONTENT -->
-    <div class="page-container" :class="`page-max-${maxWidth}`">
+    <div class="app-page__shell app-page__content" :class="`app-page__shell--${maxWidth}`">
       <slot />
     </div>
-
   </q-page>
 </template>
 
 <style scoped lang="scss">
-.app-page-layout {
+.app-page {
   display: flex;
   flex-direction: column;
+  min-height: 100%;
 }
 
-/* max widths */
-.page-max-md {
-  max-width: 900px;
-}
-
-.page-max-lg {
-  max-width: 1280px;
-}
-
-.page-max-xl {
-  max-width: 1440px;
-}
-
-/* HEADER */
-.page-header {
-  width: 100%;
-  border-bottom: 1px solid var(--surface-border);
-
-  /* subtle glass to feel premium */
-  background: rgba(255, 255, 255, 0.02);
-  backdrop-filter: blur(10px);
-
-  padding: var(--space-5) var(--space-6);
-}
-
-.page-header__content {
+.app-page__shell {
   width: 100%;
   margin: 0 auto;
+  padding: 0 var(--space-6);
+}
 
+.app-page__shell--md {
+  max-width: 1000px;
+}
+
+.app-page__shell--lg {
+  max-width: 1300px;
+}
+
+.app-page__shell--xl {
+  max-width: 1570px;
+}
+
+.app-page__header {
+  padding: var(--space-5) 0 var(--space-4);
+
+  background:
+    radial-gradient(circle at 10% 0%, rgba(139, 92, 246, 0.14), transparent 55%),
+    linear-gradient(to bottom,
+      rgba(15, 15, 26, 0.30),
+      rgba(15, 15, 26, 0));
+}
+
+.app-page__headerRow {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--space-6);
 }
 
-.page-header__titles {
+.app-page__title {
   display: flex;
   flex-direction: column;
   min-width: 0;
-}
-
-.page-title {
+  gap: var(--space-2);
+  margin: 0;
   font-size: var(--text-hero);
   font-weight: 800;
-  margin: 0;
 }
 
-.page-subtitle {
-  margin-top: var(--space-2);
+.app-page__subtitle {
   font-size: var(--text-subtitle);
   color: var(--text-muted);
 }
 
-/* ACTIONS */
-.page-actions {
+.app-page__actions {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: var(--space-3);
+  gap: var(--space-2);
   flex-wrap: wrap;
 }
 
-/* CONTENT */
-.page-container {
+.app-page__headerDivider {
+  height: 1px;
   width: 100%;
-  margin: 0 auto;
-  padding: var(--space-6);
+  background: linear-gradient(to right,
+      rgba(255, 255, 255, 0.00),
+      rgba(255, 255, 255, 0.06),
+      rgba(255, 255, 255, 0.00));
 }
 
-/* responsive */
-@media (max-width: 700px) {
-  .page-header__content {
+.app-page__content {
+  padding-top: var(--space-4);
+  padding-bottom: var(--space-6);
+}
+
+@media (max-width: 1024px) {
+  .app-page__actions {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 785px) {
+  .app-page__headerRow {
     flex-direction: column;
-    align-items: stretch;
+    align-items: center;
     gap: var(--space-4);
   }
 
-  .page-actions {
-    justify-content: flex-start;
+  .app-page__titles {
+    align-items: center;
+    text-align: center;
   }
 
-  .page-title {
+  .app-page__actions {
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    gap: var(--space-3);
+  }
+
+  .app-page__actions>* {
+    width: 100%;
+    max-width: 360px;
+  }
+
+  .app-page__title {
     font-size: 32px;
+  }
+}
+
+@media (max-width: 600px) {
+  .app-page__shell {
+    padding: 0 var(--space-4);
+  }
+
+  .app-page__header {
+    padding: var(--space-4) 0 var(--space-3);
+  }
+
+  .app-page__content {
+    padding-top: var(--space-3);
+  }
+
+  .app-page__headerRow {
+    align-items: center;
+    text-align: center;
+  }
+
+  .app-page__titles {
+    align-items: center;
+  }
+
+  .app-page__subtitle {
+    max-width: 34ch;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .app-page__actions {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 420px) {
+
+  .app-page__actions :deep(.q-btn),
+  .app-page__actions :deep(.app-button) {
+    flex-basis: 100%;
+    min-width: 0;
   }
 }
 </style>
