@@ -1,43 +1,47 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useQuasar } from 'quasar'
-
-import AppHeader from 'src/shared/layout/AppHeader.vue'
 import AppSidebar from 'src/shared/layout/AppSidebar.vue'
 
 const $q = useQuasar()
 
 const leftDrawerOpen = ref(false)
 const isDesktop = computed(() => $q.screen.gt.sm)
+const isMobile = computed(() => $q.screen.lt.md)
 
 const menuItems = [
-  { label: 'Home', icon: 'home', route: 'home' },
-  { label: 'Trades', icon: 'swap_horiz', route: 'trades' },
-  { label: 'My Cards', icon: 'collections', route: 'my-cards' }
+  { label: 'Início', icon: 'home', route: 'home' },
+  { label: 'Trocas', icon: 'swap_horiz', route: 'trades' },
+  { label: 'Minhas Cartas', icon: 'collections', route: 'my-cards' }
 ]
 
-watch(
-  isDesktop,
-  (desktop) => {
-    leftDrawerOpen.value = desktop
-  },
-  { immediate: true }
-)
+watch(isDesktop, (desktop) => {
+  leftDrawerOpen.value = desktop
+}, { immediate: true })
 
-function toggleMenu() {
+function toggleDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value
 }
 </script>
 
 <template>
   <q-layout view="lHh Lpr lFf" class="main-layout">
-    <AppHeader @toggle-menu="toggleMenu" />
+    <q-header v-if="isMobile" class="mobile-header">
+      <div class="mobile-header__inner">
+        <q-btn flat round :icon="leftDrawerOpen ? 'close' : 'menu'" class="mobile-header__btn"
+          aria-label="Abrir/Fechar menu" @click="toggleDrawer" />
+
+        <div class="mobile-header__brand">
+          <div class="mobile-header__title">Duel Market</div>
+          <div class="mobile-header__subtitle">Trade. Build. Dominate.</div>
+        </div>
+      </div>
+    </q-header>
+
     <AppSidebar v-model="leftDrawerOpen" :menu-items="menuItems" />
 
     <q-page-container class="page-container">
-      <div class="page-wrapper">
-        <router-view />
-      </div>
+      <router-view />
     </q-page-container>
   </q-layout>
 </template>
@@ -55,8 +59,47 @@ function toggleMenu() {
   padding: 0;
 }
 
-.page-wrapper {
-  width: 100%;
-  min-height: calc(100vh - 64px);
+.mobile-header {
+  height: 62px;
+  background:
+    linear-gradient(to bottom,
+      rgba(15, 15, 26, 0.78),
+      rgba(15, 15, 26, 0.56));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(18px);
+}
+
+.mobile-header__inner {
+  height: 62px;
+  padding: 0 var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.mobile-header__btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+}
+
+.mobile-header__brand {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.08;
+  min-width: 0;
+}
+
+.mobile-header__title {
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #fff;
+  font-size: 14px;
+}
+
+.mobile-header__subtitle {
+  margin-top: 2px;
+  font-size: var(--text-caption);
+  color: rgba(255, 255, 255, 0.58);
 }
 </style>

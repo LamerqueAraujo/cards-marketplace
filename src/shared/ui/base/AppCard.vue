@@ -1,14 +1,19 @@
 <script setup lang="ts">
-withDefaults(defineProps<{
+type Padding = 'none' | 'sm' | 'md' | 'lg'
+type Variant = 'default' | 'elevated' | 'subtle'
+
+const props = withDefaults(defineProps<{
   clickable?: boolean
-  padding?: 'none' | 'sm' | 'md' | 'lg'
+  padding?: Padding
   disabled?: boolean
-  variant?: 'default' | 'elevated' | 'subtle'
+  variant?: Variant
+  noTopBorder?: boolean
 }>(), {
   padding: 'md',
   clickable: false,
   disabled: false,
-  variant: 'default'
+  variant: 'default',
+  noTopBorder: false
 })
 
 const emit = defineEmits<{
@@ -21,25 +26,31 @@ function onKeydown(e: KeyboardEvent) {
     emit('click', e)
   }
 }
+
+function onClick(ev: Event) {
+  if (!props.clickable || props.disabled) return
+  emit('click', ev)
+}
 </script>
 
 <template>
-  <div class="surface-card" :class="[
-    `surface-padding-${padding}`,
-    `surface-variant-${variant}`,
+  <div class="app-card" :class="[
+    `app-card--pad-${padding}`,
+    `app-card--variant-${variant}`,
     {
-      'surface-clickable': clickable && !disabled,
-      'surface-disabled': disabled
+      'app-card--clickable': clickable && !disabled,
+      'app-card--disabled': disabled,
+      'app-card--no-top-border': noTopBorder
     }
   ]" :aria-disabled="disabled ? 'true' : 'false'" :role="clickable && !disabled ? 'button' : undefined"
-    :tabindex="clickable && !disabled ? 0 : -1" @click="clickable && !disabled ? emit('click', $event) : undefined"
+    :tabindex="clickable && !disabled ? 0 : -1" @click="onClick"
     @keydown="clickable && !disabled ? onKeydown($event) : undefined">
     <slot />
   </div>
 </template>
 
 <style scoped lang="scss">
-.surface-card {
+.app-card {
   position: relative;
   border-radius: var(--radius-lg);
   background: var(--surface-2);
@@ -53,83 +64,81 @@ function onKeydown(e: KeyboardEvent) {
     background-color 220ms var(--ease-smooth);
 }
 
-/* Variants */
-.surface-variant-default {
+.app-card--variant-default {
   box-shadow:
     0 12px 30px rgba(0, 0, 0, 0.28),
     0 0 14px rgba(139, 92, 246, 0.14);
 }
 
-.surface-variant-elevated {
+.app-card--variant-elevated {
   box-shadow:
     0 18px 42px rgba(0, 0, 0, 0.40),
     0 0 22px var(--glow-primary);
 }
 
-.surface-variant-subtle {
-  box-shadow:
-    0 10px 22px rgba(0, 0, 0, 0.20);
+.app-card--variant-subtle {
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.20);
 }
 
-/* Padding */
-.surface-padding-none {
+.app-card--pad-none {
   padding: 0;
 }
 
-.surface-padding-sm {
+.app-card--pad-sm {
   padding: var(--space-3);
 }
 
-.surface-padding-md {
+.app-card--pad-md {
   padding: var(--space-6);
 }
 
-.surface-padding-lg {
+.app-card--pad-lg {
   padding: calc(var(--space-6) + var(--space-2));
 }
 
-/* Clickable */
-.surface-clickable {
+.app-card--clickable {
   cursor: pointer;
 }
 
-.surface-clickable:hover {
+.app-card--clickable:hover {
   transform: translateY(-2px);
   border-color: rgba(139, 92, 246, 0.55);
 }
 
-.surface-variant-default.surface-clickable:hover {
+.app-card--variant-default.app-card--clickable:hover {
   box-shadow:
     0 18px 36px rgba(0, 0, 0, 0.38),
     0 0 20px rgba(139, 92, 246, 0.22);
 }
 
-.surface-variant-elevated.surface-clickable:hover {
+.app-card--variant-elevated.app-card--clickable:hover {
   box-shadow:
     0 22px 50px rgba(0, 0, 0, 0.46),
     0 0 28px var(--glow-primary);
 }
 
-.surface-variant-subtle.surface-clickable:hover {
-  box-shadow:
-    0 14px 30px rgba(0, 0, 0, 0.26);
+.app-card--variant-subtle.app-card--clickable:hover {
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.26);
 }
 
-.surface-clickable:active {
+.app-card--clickable:active {
   transform: translateY(-1px);
 }
 
-.surface-clickable:focus-visible {
+.app-card--clickable:focus-visible {
   outline: none;
   box-shadow:
     0 0 0 2px rgba(139, 92, 246, 0.35),
     0 0 22px var(--glow-primary);
 }
 
-/* Disabled */
-.surface-disabled {
+.app-card--disabled {
   opacity: 0.72;
   filter: saturate(0.85);
   pointer-events: none;
+}
+
+.app-card--no-top-border {
+  border-top-color: transparent;
 }
 </style>

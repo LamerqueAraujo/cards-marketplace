@@ -37,8 +37,16 @@ export function useTrades() {
   }
 
   async function deleteTradeById(tradeId: string) {
-    await deleteTrade(tradeId)
-    trades.value = trades.value.filter(t => t.id !== tradeId)
+    try {
+      loading.value = true
+      error.value = ''
+      await deleteTrade(tradeId)
+      trades.value = trades.value.filter(t => t.id !== tradeId)
+    } catch {
+      error.value = 'Erro ao deletar trade'
+    } finally {
+      loading.value = false
+    }
   }
 
   function loadMore() {

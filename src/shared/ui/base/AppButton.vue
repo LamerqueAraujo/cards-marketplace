@@ -39,15 +39,12 @@ const quasarColor = computed(() => {
 })
 
 const qBtnProps = computed(() => {
-  // ghost: flat e sem color (vamos estilizar via CSS)
   if (props.variant === 'ghost') {
     return {
       ...attrs,
       flat: true
     }
   }
-
-  // default: unelevated com color
   return {
     ...attrs,
     unelevated: true,
@@ -74,6 +71,15 @@ const qBtnProps = computed(() => {
     box-shadow 180ms var(--ease-smooth),
     border-color 180ms var(--ease-smooth),
     background-color 180ms var(--ease-smooth);
+}
+
+.app-btn :deep(.q-btn__content) {
+  gap: 10px;
+  align-items: center;
+}
+
+.app-btn :deep(.q-icon) {
+  margin: 0;
 }
 
 .app-btn--block {
@@ -122,5 +128,16 @@ const qBtnProps = computed(() => {
   border-color: rgba(139, 92, 246, 0.45);
   background: rgba(139, 92, 246, 0.06) !important;
   box-shadow: 0 0 14px rgba(139, 92, 246, 0.22);
+}
+
+@media (max-width: 700px) {
+  .app-btn--md {
+    width: 100%;
+  }
+
+  .app-btn--lg {
+    width: 100%;
+  }
+
 }
 </style>

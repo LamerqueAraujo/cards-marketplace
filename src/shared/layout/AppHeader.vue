@@ -1,87 +1,76 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { useQuasar } from 'quasar'
-import { useAuthStore } from 'src/modules/auth/store/auth.store'
-
-const emit = defineEmits(['toggle-menu'])
-
-const router = useRouter()
-const $q = useQuasar()
-const authStore = useAuthStore()
-
-const isMobile = computed(() => $q.screen.lt.md)
-
-async function logout() {
-  authStore.clearToken()
-  await router.push({ name: 'login' })
-}
+const emit = defineEmits<{ (e: 'toggle-menu'): void }>()
 </script>
 
 <template>
-  <q-header class="app-header">
+  <header class="app-header">
+    <div class="app-header__left">
+      <q-btn flat round icon="menu" class="app-header__icon" aria-label="Abrir menu" @click="emit('toggle-menu')" />
 
-    <q-toolbar class="toolbar">
-
-      <q-btn v-if="isMobile" flat dense round icon="menu" class="menu-btn" @click="emit('toggle-menu')" />
-
-      <q-toolbar-title class="app-title">
-        <span class="title-text">
-          Duel Market
-        </span>
-      </q-toolbar-title>
-
-      <q-space />
-
-      <q-btn flat dense icon="logout" class="logout-btn" @click="logout">
-        <span class="logout-text">Sair</span>
-      </q-btn>
-
-    </q-toolbar>
-
-  </q-header>
+      <div class="app-header__brand" aria-label="Duel Market">
+        <div class="app-header__title">Duel Market</div>
+        <div class="app-header__subtitle">Trade. Build. Dominate.</div>
+      </div>
+    </div>
+  </header>
 </template>
 
 <style scoped lang="scss">
 .app-header {
-  background: rgba(15, 15, 26, 0.95);
-  backdrop-filter: blur(8px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  height: 62px;
+  padding: 0 var(--space-6);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  background:
+    linear-gradient(to bottom,
+      rgba(15, 15, 26, 0.72),
+      rgba(15, 15, 26, 0.52));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.25);
 }
 
-.toolbar {
-  padding: 0 24px;
-  height: 64px;
+.app-header__left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
 }
 
-.app-title {
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  color: #ffffff;
+.app-header__icon {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+
+  transition: background 180ms var(--ease-smooth), transform 180ms var(--ease-smooth);
 }
 
-.title-text {
-  background: linear-gradient(90deg, #ffffff, rgba(255, 255, 255, 0.7));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+.app-header__icon:hover {
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateY(-1px);
 }
 
-.menu-btn {
-  margin-right: 8px;
+.app-header__brand {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.08;
 }
 
-.logout-btn {
-  color: rgba(255, 255, 255, 0.7);
-  transition: color 0.2s ease;
+.app-header__title {
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #fff;
+  font-size: 15px;
 }
 
-.logout-btn:hover {
-  color: #ffffff;
-}
-
-.logout-text {
-  margin-left: 6px;
-  font-size: 13px;
+.app-header__subtitle {
+  margin-top: 2px;
+  font-size: var(--text-caption);
+  color: rgba(255, 255, 255, 0.58);
 }
 </style>

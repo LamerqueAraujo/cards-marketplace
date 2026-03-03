@@ -38,7 +38,12 @@ async function onSubmit() {
       password: password.value
     })
 
-    authStore.setToken(response.token, response.user.id)
+    authStore.setSession({
+      token: response.token,
+      userId: response.user.id,
+      name: response.user.name,
+      email: response.user.email
+    })
     await router.push({ name: 'home' })
   } catch (error: unknown) {
     if (error instanceof Error && error.message === 'INVALID_CREDENTIALS') {
