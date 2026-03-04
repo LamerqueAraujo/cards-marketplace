@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useQuasar } from 'quasar'
 import AppCard from './AppCard.vue'
 import AppIconButton from './AppIconButton.vue'
+
+const $q = useQuasar()
 
 const props = withDefaults(defineProps<{
   modelValue: boolean
@@ -21,6 +24,8 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
+const isMobile = computed(() => $q.screen.lt.sm)
+
 const model = computed({
   get: () => props.modelValue,
   set: (v: boolean) => emit('update:modelValue', v)
@@ -33,9 +38,9 @@ function close() {
 </script>
 
 <template>
-  <q-dialog v-model="model" transition-show="fade" transition-hide="fade">
-    <AppCard class="base-dialog" padding="none" variant="elevated" :style="{ width, maxHeight }">
-      <!-- HEADER -->
+  <q-dialog v-model="model" transition-show="fade" transition-hide="fade" :maximized="isMobile">
+    <AppCard class="base-dialog" padding="none" variant="elevated" :class="{ 'base-dialog--mobile': isMobile }"
+      :style="isMobile ? undefined : { width: props.width, maxHeight: props.maxHeight }">
       <div v-if="title || subtitle || $slots.header || showClose" class="dialog-header">
         <div class="dialog-titles">
           <slot name="header">
@@ -49,12 +54,10 @@ function close() {
         </div>
       </div>
 
-      <!-- BODY -->
       <div class="dialog-body">
         <slot />
       </div>
 
-      <!-- FOOTER -->
       <div v-if="$slots.footer" class="dialog-footer">
         <slot name="footer" />
       </div>
@@ -70,6 +73,14 @@ function close() {
   flex-direction: column;
 }
 
+.base-dialog--mobile {
+  width: 100vw;
+  height: 100vh;
+  max-width: 100vw;
+  max-height: 100vh;
+  border-radius: 0;
+}
+
 .dialog-header {
   padding: var(--space-5) var(--space-6);
   display: flex;
@@ -80,7 +91,6 @@ function close() {
   background: linear-gradient(to right,
       rgba(139, 92, 246, 0.14),
       rgba(30, 144, 255, 0.05));
-
   border-bottom: 1px solid var(--surface-border);
 }
 
@@ -127,5 +137,24 @@ function close() {
   justify-content: flex-end;
   gap: var(--space-3);
   background: rgba(0, 0, 0, 0.22);
+}
+
+@media (max-width: 599px) {
+  .dialog-header {
+    padding: var(--space-4) var(--space-4);
+  }
+
+  .dialog-title {
+    font-size: 22px;
+    letter-spacing: 0.04em;
+  }
+
+  .dialog-body {
+    padding: var(--space-4);
+  }
+
+  .dialog-footer {
+    padding: var(--space-4);
+  }
 }
 </style>

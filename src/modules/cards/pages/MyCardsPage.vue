@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import type { UserCard } from '../types/cards.types'
+
+import AppPageLayout from 'src/shared/layout/AppPageLayout.vue'
+import AppButton from 'src/shared/ui/base/AppButton.vue'
+import BaseDialog from 'src/shared/ui/base/BaseDialog.vue'
 
 import CardGrid from 'src/shared/ui/data-display/CardGrid.vue'
 import CardPreviewDialog from 'src/shared/ui/data-display/CardPreviewDialog.vue'
-import InventoryGrid from '../components/InventoryGrid.vue'
-import BaseDialog from 'src/shared/ui/base/BaseDialog.vue'
-import AppButton from 'src/shared/ui/base/AppButton.vue'
+
 import { useMyCards } from '../composables/useMyCards'
 import { useCardPreviewTransition } from '../composables/useCardPreviewTransition'
 
@@ -16,6 +18,8 @@ const selectedPreviewCard = ref<UserCard | null>(null)
 
 const {
   myCards,
+  loadingAvailable,
+  availableError,
   loading,
   error,
   selectedCardIds,
@@ -27,10 +31,10 @@ const {
   toggleCardSelection
 } = useMyCards()
 
-const {
-  handleCardSelect,
-  animateBackToOrigin
-} = useCardPreviewTransition({
+const isAddDisabled = computed(() => selectedCardIds.value.length === 0)
+const ownedIds = computed(() => myCards.value.map(c => c.id))
+
+const { handleCardSelect, animateBackToOrigin } = useCardPreviewTransition({
   cards: myCards,
   onOpen: (card: UserCard) => {
     selectedPreviewCard.value = card
@@ -44,55 +48,91 @@ const {
 
 function openAddDialog() {
   showAddDialog.value = true
-  void fetchAvailableCards()
+}
+
+function closeAddDialog() {
+  showAddDialog.value = false
+  selectedCardIds.value = []
 }
 
 async function handleAddCards() {
   const success = await addSelectedCards()
+  if (!success) return
 
-  if (success) {
-    showAddDialog.value = false
-  }
+  closeAddDialog()
+  await fetchMyCards()
 }
 
-onMounted(fetchMyCards)
+function onPreviewModelUpdate(value: boolean) {
+  if (!value) animateBackToOrigin()
+}
+
+
+watch(
+  () => showAddDialog.value,
+  (open) => {
+    if (open) void fetchAvailableCards()
+  }
+)
+
+onMounted(() => {
+  void fetchMyCards()
+})
 </script>
 
 <template>
-  <q-page class="q-pa-md">
-
-    <div class="page-header">
+  <AppPageLayout title="Minhas cartas" subtitle="Gerencie sua coleção e adicione cartas para criar trocas.">
+    <template #actions>
       <AppButton label="Adicionar cartas" icon="add" @click="openAddDialog" />
+    </template>
+
+    <div class="mycards-page">
+      <div class="mycards-inventoryScroll">
+        <CardGrid :cards="myCards" :loading="loading" :error="error" :min-slots="27" show-empty-slot keep-empty-slot
+          empty-slot-label="Adicionar carta" @select="handleCardSelect" @empty-slot-click="openAddDialog" />
+      </div>
     </div>
 
-    <InventoryGrid :cards="myCards" :min-slots="27" :loading="loading" :error="error"
-      empty-title="Nenhuma carta cadastrada" empty-description="Adicione cartas para começar a negociar."
-      @select="handleCardSelect" @empty-slot-click="openAddDialog" />
-
     <BaseDialog v-model="showAddDialog" title="Adicionar cartas"
-      subtitle="Selecione cartas para adicionar ao seu inventário" width="1000px">
-      <CardGrid :cards="availableCards" selectable :selected-ids="selectedCardIds"
-        @select="({ id }) => toggleCardSelection(id)" />
+      subtitle="Selecione cartas para adicionar ao seu inventário" width="min(1000px, 92vw)">
+      <CardGrid :cards="availableCards" :loading="loadingAvailable" :error="availableError" selectable
+        :selected-ids="selectedCardIds" :disabled-ids="ownedIds" @select="({ id }) => toggleCardSelection(id)" />
 
       <template #footer>
-        <q-btn flat label="Cancelar" @click="showAddDialog = false" />
-
-        <q-btn label="Adicionar à minha coleção" color="primary" :disable="!selectedCardIds.length"
-          :loading="addingCards" @click="handleAddCards" />
+        <div class="app-myCards__dialogFooter">
+          <AppButton label="Cancelar" variant="ghost" class="app-myCards__btn" @click="closeAddDialog" />
+          <AppButton label="Adicionar à minha coleção" icon="add" :loading="addingCards" :disabled="isAddDisabled"
+            class="app-myCards__btn" @click="handleAddCards" />
+        </div>
       </template>
     </BaseDialog>
 
-    <CardPreviewDialog v-model="previewOpen" :card="selectedPreviewCard" @update:modelValue="(value) => {
-      if (!value) animateBackToOrigin()
-    }" />
-
-  </q-page>
+    <CardPreviewDialog v-model="previewOpen" :card="selectedPreviewCard" @update:modelValue="onPreviewModelUpdate" />
+  </AppPageLayout>
 </template>
 
-<style scoped>
-.page-header {
+<style scoped lang="scss">
+.app-myCards {
   display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.app-myCards__dialogFooter {
+  display: flex;
+  gap: var(--space-3);
   justify-content: flex-end;
-  margin-bottom: 20px;
+  width: 100%;
+}
+
+@media (max-width: 700px) {
+  .app-myCards__dialogFooter {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .app-myCards__btn {
+    width: 100%;
+  }
 }
 </style>

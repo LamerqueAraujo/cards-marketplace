@@ -12,7 +12,7 @@ const isMobile = computed(() => $q.screen.lt.md)
 const menuItems = [
   { label: 'Início', icon: 'home', route: 'home' },
   { label: 'Trocas', icon: 'swap_horiz', route: 'trades' },
-  { label: 'Minhas Cartas', icon: 'collections', route: 'my-cards' }
+  { label: 'Minhas Cartas', icon: 'style', route: 'my-cards' }
 ]
 
 watch(isDesktop, (desktop) => {

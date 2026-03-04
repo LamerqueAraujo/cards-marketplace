@@ -1,21 +1,16 @@
 import { ref } from 'vue'
-import {
-  getCards,
-  getMyCards,
-  addCardsToUser
-} from '../services/cards.service'
+import { getCards, getMyCards, addCardsToUser } from '../services/cards.service'
 import type { UserCard } from '../types/cards.types'
 import type { GetCardsResponse } from '../types/cards.response'
 
 export function useMyCards() {
   const myCards = ref<UserCard[]>([])
   const availableCards = ref<UserCard[]>([])
-
   const loading = ref(false)
   const loadingAvailable = ref(false)
-
   const error = ref('')
   const availableError = ref('')
+  const addError = ref('')
 
   const selectedCardIds = ref<string[]>([])
   const addingCards = ref(false)
@@ -26,7 +21,7 @@ export function useMyCards() {
       error.value = ''
       myCards.value = await getMyCards()
     } catch {
-      error.value = 'Erro ao carregar suas cartas'
+      error.value = 'Não foi possível carregar suas cartas.'
     } finally {
       loading.value = false
     }
@@ -39,16 +34,24 @@ export function useMyCards() {
       const response: GetCardsResponse = await getCards()
       availableCards.value = response.list
     } catch {
-      availableError.value = 'Erro ao carregar cartas disponíveis'
+      availableError.value = 'Não foi possível carregar as cartas disponíveis.'
     } finally {
       loadingAvailable.value = false
     }
   }
 
+  function resetSelection() {
+    selectedCardIds.value = []
+    addError.value = ''
+  }
+
   function toggleCardSelection(cardId: string) {
-    selectedCardIds.value = selectedCardIds.value.includes(cardId)
-      ? selectedCardIds.value.filter(id => id !== cardId)
-      : [...selectedCardIds.value, cardId]
+    if (selectedCardIds.value.includes(cardId)) {
+      selectedCardIds.value = selectedCardIds.value.filter((id) => id !== cardId)
+      return
+    }
+
+    selectedCardIds.value = [...selectedCardIds.value, cardId]
   }
 
   async function addSelectedCards(): Promise<boolean> {
@@ -56,12 +59,15 @@ export function useMyCards() {
 
     try {
       addingCards.value = true
+      addError.value = ''
+
       await addCardsToUser(selectedCardIds.value)
       await fetchMyCards()
-      selectedCardIds.value = []
+
+      resetSelection()
       return true
     } catch {
-      error.value = 'Erro ao adicionar cartas'
+      addError.value = 'Não foi possível adicionar as cartas à sua coleção.'
       return false
     } finally {
       addingCards.value = false
@@ -75,11 +81,13 @@ export function useMyCards() {
     loadingAvailable,
     error,
     availableError,
+    addError,
     selectedCardIds,
     addingCards,
     fetchMyCards,
     fetchAvailableCards,
     toggleCardSelection,
-    addSelectedCards
+    addSelectedCards,
+    resetSelection
   }
 }

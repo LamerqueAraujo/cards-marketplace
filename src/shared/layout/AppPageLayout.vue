@@ -157,6 +157,7 @@ withDefaults(defineProps<{
 @media (max-width: 600px) {
   .app-page__shell {
     padding: 0 var(--space-4);
+    padding-bottom: var(--space-3);
   }
 
   .app-page__header {
@@ -164,7 +165,10 @@ withDefaults(defineProps<{
   }
 
   .app-page__content {
-    padding-top: var(--space-3);
+    padding-top: var(--space-5);
+    padding-bottom: var(--space-6);
+    flex: 1;
+    min-height: 0;
   }
 
   .app-page__headerRow {
