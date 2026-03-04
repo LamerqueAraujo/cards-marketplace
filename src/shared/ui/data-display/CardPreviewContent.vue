@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import type { BaseCard } from 'src/shared/types/card.types'
 import CardPreviewImage from './CardPreviewImage.vue'
 import AppSeparator from 'src/shared/ui/base/AppSeparator.vue'
-import SurfaceCard from 'src/shared/ui/base/SurfaceCard.vue'
+import AppCard from 'src/shared/ui/base/AppCard.vue'
 
 const props = defineProps<{
   card: BaseCard
@@ -13,7 +13,7 @@ const formattedDescription = computed(() => props.card.description ?? '')
 </script>
 
 <template>
-  <SurfaceCard class="preview" padding="lg" variant="subtle">
+  <AppCard class="preview" padding="lg" variant="subtle">
     <div class="preview__content">
       <CardPreviewImage :image-url="card.imageUrl" size="lg" />
 
@@ -29,7 +29,7 @@ const formattedDescription = computed(() => props.card.description ?? '')
         {{ formattedDescription }}
       </p>
     </div>
-  </SurfaceCard>
+  </AppCard>
 </template>
 
 <style scoped lang="scss">

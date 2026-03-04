@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import AppPageLayout from 'src/shared/ui/layout/AppPageLayout.vue'
+import AppPageLayout from 'src/shared/layout/AppPageLayout.vue'
 import AppCard from 'src/shared/ui/base/AppCard.vue'
 import AppButton from 'src/shared/ui/base/AppButton.vue'
 import LoadingState from 'src/shared/ui/feedback/LoadingState.vue'
@@ -31,7 +31,7 @@ const {
     <template #actions>
       <template v-if="isAuthenticated">
         <AppButton label="Criar troca" icon="add" @click="goCreateTrade" />
-        <AppButton label="Minhas cartas" icon="collections" variant="ghost" @click="goMyCards" />
+        <AppButton label="Minhas cartas" icon="style" variant="ghost" @click="goMyCards" />
       </template>
 
       <template v-else>
@@ -52,8 +52,6 @@ const {
 
             <div class="app-home__heroActions">
               <AppButton label="Ver todas as trocas" icon="swap_horiz" @click="goTrades" />
-              <AppButton v-if="isAuthenticated" label="Adicionar cartas" icon="style" variant="ghost"
-                @click="goMyCards" />
             </div>
           </div>
 

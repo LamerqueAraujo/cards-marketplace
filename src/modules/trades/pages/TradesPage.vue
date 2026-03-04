@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import AppPageLayout from 'src/shared/ui/layout/AppPageLayout.vue'
+import AppPageLayout from 'src/shared/layout/AppPageLayout.vue'
 import TradeCard from '../components/TradeCard.vue'
 import TradeCreateDialog from '../components/TradeCreateDialog.vue'
 import TradeDetailsDialog from '../components/TradeDetailsDialog.vue'
