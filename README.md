@@ -1,176 +1,192 @@
-# Cards Marketplace
+# Card Marketplace --- Frontend
 
-Trading cards marketplace SPA built with Vue 3, Quasar and TypeScript.
+Aplicação frontend desenvolvida para gerenciamento e negociação de
+cartas através de um sistema de trocas (trades).\
+O projeto foi construído utilizando **Vue 3, TypeScript, Quasar
+Framework e Pinia**, seguindo uma arquitetura modular e orientada a
+componentes.
 
-This project was developed as part of a technical challenge and simulates a real production-ready frontend application, focusing on architecture, UX, maintainability and best development practices.
+------------------------------------------------------------------------
 
----
+## Objetivo
 
-## 🚀 Tech Stack
+Permitir que usuários:
 
-- Vue 3
-- Quasar Framework (SPA)
-- TypeScript
-- Pinia (state management)
-- Vue Router
-- Axios
-- Zod (form validation)
-- ESLint + Prettier
+-   Cadastrem uma conta
+-   Gerenciem suas cartas
+-   Criem trocas (trades)
+-   Explore trocas abertas no marketplace
+-   Negociem cartas com outros usuários
 
----
+------------------------------------------------------------------------
 
-## 🧱 Architecture
+# Tecnologias
 
-The application follows a modular architecture based on domain separation:
+-   Vue 3 (Composition API)
+-   TypeScript
+-   Quasar Framework
+-   Pinia (State Management)
+-   Axios (HTTP Client)
+-   SCSS
+-   Vite
 
+------------------------------------------------------------------------
 
-src/
-modules/
-auth/
-marketplace/
-cards/
-trades/
+# Arquitetura
 
-shared/
-components/
-services/
-types/
-utils/
+O projeto segue uma arquitetura **modular**, separando responsabilidades
+por domínio.
 
-stores/
-boot/
-layouts/
+src/ modules/ auth/ cards/ trades/ home/
 
+shared/ ui/ layout/ feedback/ dialogs/ notification/
 
-### Principles applied
+boot/ axios
 
-- Separation of responsibilities
-- Scalable folder structure
-- Centralized API layer
-- Reusable UI components
-- Typed domain models
+Cada módulo possui:
 
----
+-   components
+-   composables
+-   services
+-   types
+-   mappers
 
-## 🔐 Main Features
+------------------------------------------------------------------------
 
-- User registration
-- User authentication
-- Add cards to user account
-- Create trade requests
-- Delete trade requests
-- Public marketplace listing open trades
+# Principais Funcionalidades
 
----
+## Autenticação
 
-## 🌐 API
+-   Login
+-   Registro de usuário
+-   Persistência de sessão
+-   Tratamento de erros da API
+-   Feedback visual com sistema de Toast
 
-Base URL:
+## Marketplace (Home)
 
+Página inicial que exibe:
 
-https://cards-marketplace-api.onrender.com/
+-   últimas trocas criadas
+-   ações rápidas para usuários autenticados
+-   abertura de detalhes da troca em modal
 
+## Sistema de Trades
 
-Endpoints used:
+Usuários podem:
 
-- POST /register
-- POST /login
-- GET /me
-- GET /cards
-- GET /me/cards
-- POST /me/cards
-- GET /trades
-- POST /trades
-- DELETE /trades/:id
+-   criar trocas
+-   cancelar trocas
+-   visualizar detalhes
+-   filtrar "Minhas trocas ativas"
 
----
+## Sistema de Toast
 
-## 🧭 Project Management
+Notificações globais com:
 
-This project follows a Kanban workflow simulating a real development team.
+-   variantes (success, error, info, warning)
+-   swipe para fechar
+-   barra de progresso
+-   fechamento com ESC
+-   acessibilidade com ARIA
 
-### Board structure
+## Cache de Trades
 
-- Backlog
-- To Do
-- In Progress
-- Review
-- Done
+Foi implementado um sistema de cache no composable `useTrades`:
 
-### Git flow
+-   evita requisições duplicadas
+-   reutiliza dados já carregados
+-   controle de concorrência com `requestId`
+-   paginação incremental com `loadMore`
 
-- main → production-ready code
-- develop → integration branch
-- feature/* → feature development
-- fix/* → bug fixes
-- refactor/* → code improvements
+Isso melhora performance e reduz chamadas à API.
 
----
+------------------------------------------------------------------------
 
-## 🛠️ Development Setup
+# Estrutura de Componentes
 
-### Requirements
+## UI Base
 
-- Node.js LTS
-- npm
-- Git
+Componentes reutilizáveis:
 
-### Installation
+-   AppButton
+-   AppCard
+-   AppInput
+-   AppSeparator
 
-```bash
-npm install -g @quasar/cli
-Running project
-git clone <repo-url>
-cd cards-marketplace
+## Feedback
 
-git checkout develop
+-   LoadingState
+-   ErrorState
+-   EmptyState
 
-quasar create .
+## Dialogs
+
+-   ConfirmDialog
+-   TradeCreateDialog
+-   TradeDetailsDialog
+
+## Notification
+
+-   ToastHost
+-   ToastStore
+-   useToast()
+
+------------------------------------------------------------------------
+
+# Fluxo de Navegação
+
+Home → lista de trocas\
+Clique na troca → abre modal de detalhes
+
+Trades → marketplace completo\
+Filtro → Minhas trocas ativas
+
+------------------------------------------------------------------------
+
+# Performance
+
+O projeto possui otimizações como:
+
+-   cache de dados
+-   controle de requisições concorrentes
+-   paginação incremental
+-   reutilização de componentes
+
+------------------------------------------------------------------------
+
+## Variáveis de ambiente
+
+Crie um arquivo `.env` baseado no `.env.example`.
+
+Exemplo:
+
+VITE_API_URL=https://cards-marketplace-api.onrender.com
+
+------------------------------------------------------------------------
+
+# Executar o projeto
+
+Instalar dependências
+
 npm install
+
+Executar em modo desenvolvimento
+
 npm run dev
-📦 Branch Strategy
-main
-develop
-feature/*
-fix/*
-refactor/*
-docs/*
 
-Example:
+Build para produção
 
-feature/auth-login
-feature/trades-create
-fix/api-error-handling
-🧾 Commit Pattern
+npm run build
 
-Conventional commits:
+------------------------------------------------------------------------
 
-feat(scope): description
-fix(scope): description
-refactor(scope): description
-docs: description
-chore: description
+# Autor
+Lamerque Araujo
 
-Example:
+Projeto desenvolvido como desafio técnico para demonstrar:
 
-feat(auth): implement login flow
-feat(trades): integrate trade creation
-fix(api): handle 401 globally
-docs: add architecture documentation
-🎨 UX Approach
-
-Marketplace-first UI
-
-Card-based layout
-
-Loading states
-
-Empty states
-
-Error feedback
-
-Responsive design
-
-🚀 Deployment
-
-The application will be deployed as a SPA after implementation is complete.
+-   organização de código
+-   arquitetura frontend
+-   experiência do usuário
+-   boas práticas com Vue 3
