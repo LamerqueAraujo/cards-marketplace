@@ -177,15 +177,12 @@ function logout() {
 }
 
 .drawer__bottom {
-  padding: 12px 12px 14px;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
   background: linear-gradient(to top, rgba(15, 15, 26, 0.95), rgba(15, 15, 26, 0.65));
 }
 
 .account {
-  border-radius: 18px;
   padding: 14px;
-
   background:
     linear-gradient(135deg,
       rgba(255, 255, 255, 0.05),

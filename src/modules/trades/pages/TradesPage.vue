@@ -1,32 +1,48 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import AppPageLayout from 'src/shared/layout/AppPageLayout.vue'
+import AppButton from 'src/shared/ui/base/AppButton.vue'
+import AppCard from 'src/shared/ui/base/AppCard.vue'
+import LoadingState from 'src/shared/ui/feedback/LoadingState.vue'
+import ErrorState from 'src/shared/ui/feedback/ErrorState.vue'
+import EmptyState from 'src/shared/ui/feedback/EmptyState.vue'
+import ConfirmDialog from 'src/shared/ui/dialogs/ConfirmDialog.vue'
 import TradeCard from '../components/TradeCard.vue'
 import TradeCreateDialog from '../components/TradeCreateDialog.vue'
 import TradeDetailsDialog from '../components/TradeDetailsDialog.vue'
 import { useTrades } from '../composables/useTrades'
-import LoadingState from 'src/shared/ui/feedback/LoadingState.vue'
-import ErrorState from 'src/shared/ui/feedback/ErrorState.vue'
-import EmptyState from 'src/shared/ui/feedback/EmptyState.vue'
-import SurfaceCard from 'src/shared/ui/base/SurfaceCard.vue'
 import type { TradeCardModel } from '../types/trade-card.model.types'
 
+const route = useRoute()
+const router = useRouter()
+
 const showCreateTradeDialog = ref(false)
+
 const showDetails = ref(false)
 const selectedTrade = ref<TradeCardModel | null>(null)
 
+const confirmDeleteOpen = ref(false)
+const pendingDeleteId = ref<string | null>(null)
+
 const {
   trades,
-  loading,
+  loading: loadingList,
+  loadingMore,
   error,
   hasMore,
   loadMore,
   deleteTradeById,
-  fetchTrades
+  fetchTrades,
+  deletingById,
 } = useTrades()
 
 function openCreateTradeDialog() {
   showCreateTradeDialog.value = true
+}
+
+function onCreatedTrade() {
+  void fetchTrades({ reset: true })
 }
 
 function onOpenDetails(trade: TradeCardModel) {
@@ -39,24 +55,77 @@ function closeDetails() {
   selectedTrade.value = null
 }
 
-async function onCancelTrade(tradeId: string) {
-  await deleteTradeById(tradeId)
-  if (selectedTrade.value?.id === tradeId) closeDetails()
+function requestDelete(tradeId: string) {
+  pendingDeleteId.value = tradeId
+  confirmDeleteOpen.value = true
+}
+
+async function confirmDelete() {
+  const id = pendingDeleteId.value
+  if (!id) return
+
+  await deleteTradeById(id)
+
+  if (selectedTrade.value?.id === id) {
+    closeDetails()
+  }
+
+  confirmDeleteOpen.value = false
+  pendingDeleteId.value = null
+}
+
+function cancelDelete() {
+  confirmDeleteOpen.value = false
+  pendingDeleteId.value = null
+}
+
+function normalizeTradeQuery(v: unknown): string | null {
+  if (typeof v === 'string' && v.trim()) return v
+  if (Array.isArray(v) && typeof v[0] === 'string' && v[0].trim()) return v[0]
+  return null
+}
+
+function clearTradeQuery() {
+  const q = { ...route.query }
+  delete q.trade
+  void router.replace({ query: q })
+}
+
+function tryOpenFromQuery() {
+  const tradeId = normalizeTradeQuery(route.query.trade)
+  if (!tradeId) return false
+  if (loadingList.value) return false
+  if (!trades.value.length) return false
+
+  const found = trades.value.find(t => t.id === tradeId)
+  if (!found) return false
+
+  selectedTrade.value = found
+  showDetails.value = true
+  clearTradeQuery()
+  return true
 }
 
 onMounted(() => {
-  void fetchTrades(true)
+  void fetchTrades({ reset: true })
 })
+
+watch(
+  [() => route.query.trade, () => trades.value.length, () => loadingList.value],
+  () => {
+    void tryOpenFromQuery()
+  },
+  { immediate: true }
+)
 </script>
 
 <template>
-  <AppPageLayout title="Marketplace" subtitle="Explore as trocas disponíveis ou crie a sua própria troca!"
-    icon="swap_horiz">
+  <AppPageLayout title="Trocas" subtitle="Explore as trocas disponíveis ou crie a sua própria troca!" icon="swap_horiz">
     <template #actions>
-      <q-btn label="Criar troca" color="primary" icon="add" @click="openCreateTradeDialog" />
+      <AppButton label="Criar troca" icon="add" @click="openCreateTradeDialog" />
     </template>
 
-    <LoadingState v-if="loading && trades.length === 0" type="grid" />
+    <LoadingState v-if="loadingList && trades.length === 0" type="grid" />
 
     <ErrorState v-else-if="error" :title="error" />
 
@@ -64,29 +133,30 @@ onMounted(() => {
       description="Seja o primeiro a criar uma troca." />
 
     <div v-else class="trade-grid">
-      <TradeCard v-for="trade in trades" :key="trade.id" :trade="trade" @delete="deleteTradeById"
-        @open-details="onOpenDetails" />
+      <TradeCard v-for="trade in trades" :key="trade.id" :trade="trade" :is-deleting="!!deletingById[trade.id]"
+        @delete="requestDelete" @open-details="onOpenDetails" />
 
-      <SurfaceCard v-if="hasMore" class="load-more-card" @click="loadMore" role="button" tabindex="0">
+      <AppCard v-if="hasMore" class="load-more-card">
         <div class="load-more-content">
-          <div class="load-more-icon">
-            <q-icon name="add" size="28px" />
-          </div>
-
           <div class="load-more-text">
             <div class="load-more-title">Carregar mais</div>
             <div class="load-more-subtitle">Veja mais trocas disponíveis no marketplace</div>
           </div>
+
+          <AppButton label="Carregar mais" icon="add" :loading="loadingMore" :disabled="loadingMore || loadingList"
+            @click="loadMore" />
         </div>
-      </SurfaceCard>
+      </AppCard>
     </div>
 
-    <TradeCreateDialog v-model="showCreateTradeDialog" />
+    <TradeCreateDialog v-model="showCreateTradeDialog" @created="onCreatedTrade" />
 
-    <!-- MODAL DE DETALHES -->
-    <TradeDetailsDialog v-model="showDetails" :trade="selectedTrade" @update:model-value="(v) => !v && closeDetails()"
-      @cancel-trade="onCancelTrade" @request-trade="(id) => console.log('request-trade', id)"
-      @preview-card="(cardId) => console.log('preview-card', cardId)" />
+    <TradeDetailsDialog v-model="showDetails" :trade="selectedTrade" @cancel-trade="requestDelete"
+      @update:modelValue="(v) => !v && closeDetails()" />
+
+    <ConfirmDialog v-model="confirmDeleteOpen" title="Cancelar troca?"
+      description="Essa ação remove sua solicitação de troca do marketplace." confirm-label="Sim, cancelar"
+      cancel-label="Voltar" :loading="false" @confirm="confirmDelete" @cancel="cancelDelete" />
   </AppPageLayout>
 </template>
 
@@ -106,9 +176,7 @@ onMounted(() => {
 }
 
 .load-more-card {
-  cursor: pointer;
   min-height: 220px;
-
   display: flex;
   align-items: center;
   justify-content: center;
@@ -128,23 +196,10 @@ onMounted(() => {
 .load-more-content {
   display: flex;
   align-items: center;
-  gap: 14px;
+  justify-content: space-between;
+  gap: 16px;
   padding: 18px 20px;
-}
-
-.load-more-icon {
-  width: 54px;
-  height: 54px;
-  border-radius: 999px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  background: var(--gradient-primary);
-  color: white;
-
-  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.45);
+  width: 100%;
 }
 
 .load-more-text {

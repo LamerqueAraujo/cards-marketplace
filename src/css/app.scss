@@ -1,3 +1,5 @@
+@import './scrollbar.scss';
+
 :root {
   --font-display: "Cinzel", serif;
   --font-body: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
@@ -28,6 +30,15 @@
   --grid-gap: var(--space-6);
   --grid-card-min: 160px;         
   --grid-card-min-lg: 180px;    
+  --ds-positive: #228B22;
+  --ds-negative: #FF4500;
+  --ds-info: #1E90FF;
+  --ds-warning: #FFD700;
+
+  --ds-glow-positive: rgba(34, 139, 34, 0.18);
+  --ds-glow-negative: rgba(255, 69, 0, 0.18);
+  --ds-glow-info: rgba(30, 144, 255, 0.18);
+  --ds-glow-warning: rgba(255, 215, 0, 0.18);
 }
 
 body {

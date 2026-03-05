@@ -13,10 +13,12 @@ const props = withDefaults(defineProps<{
   width?: string
   maxHeight?: string
   showClose?: boolean
+  bodyScrollable?: boolean
 }>(), {
   width: '960px',
   maxHeight: '86vh',
-  showClose: true
+  showClose: true,
+  bodyScrollable: true
 })
 
 const emit = defineEmits<{
@@ -39,8 +41,10 @@ function close() {
 
 <template>
   <q-dialog v-model="model" transition-show="fade" transition-hide="fade" :maximized="isMobile">
-    <AppCard class="base-dialog" padding="none" variant="elevated" :class="{ 'base-dialog--mobile': isMobile }"
-      :style="isMobile ? undefined : { width: props.width, maxHeight: props.maxHeight }">
+    <AppCard class="base-dialog" padding="none" variant="elevated" :class="[
+      { 'base-dialog--mobile': isMobile },
+      { 'base-dialog--no-body-scroll': !bodyScrollable }
+    ]" :style="isMobile ? undefined : { width: props.width, maxHeight: props.maxHeight }">
       <div v-if="title || subtitle || $slots.header || showClose" class="dialog-header">
         <div class="dialog-titles">
           <slot name="header">
@@ -55,7 +59,9 @@ function close() {
       </div>
 
       <div class="dialog-body">
-        <slot />
+        <div class="dialog-scroller app-scroll">
+          <slot />
+        </div>
       </div>
 
       <div v-if="$slots.footer" class="dialog-footer">
@@ -110,24 +116,36 @@ function close() {
   color: var(--text-muted);
 }
 
-.dialog-close {
-  flex: 0 0 auto;
-}
-
 .dialog-body {
   flex: 1;
   min-height: 0;
-  overflow: auto;
+  overflow: hidden;
   padding: var(--space-6);
 }
 
-.dialog-body::-webkit-scrollbar {
-  width: 6px;
+.dialog-scroller {
+  height: 100%;
+  min-height: 0;
+  overflow: auto;
+  padding-right: 6px;
 }
 
-.dialog-body::-webkit-scrollbar-thumb {
+.app-scroll::-webkit-scrollbar {
+  width: 7px;
+}
+
+.app-scroll::-webkit-scrollbar-thumb {
   background: rgba(139, 92, 246, 0.55);
-  border-radius: 6px;
+  border-radius: 999px;
+}
+
+.app-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.app-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(139, 92, 246, 0.55) rgba(255, 255, 255, 0.04);
 }
 
 .dialog-footer {
@@ -141,7 +159,7 @@ function close() {
 
 @media (max-width: 599px) {
   .dialog-header {
-    padding: var(--space-4) var(--space-4);
+    padding: var(--space-4);
   }
 
   .dialog-title {

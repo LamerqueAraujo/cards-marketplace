@@ -1,188 +1,407 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, onBeforeUnmount, watchEffect, onMounted } from 'vue'
 import type { TradeCardModel } from '../types/trade-card.model.types'
 import { useAuthStore } from 'src/modules/auth/store/auth.store'
+import type { ComponentPublicInstance } from 'vue'
 import AppCard from 'src/shared/ui/base/AppCard.vue'
-import CardItem from '../../../shared/ui/data-display/CardItem.vue'
+import AppIconButton from 'src/shared/ui/base/AppIconButton.vue'
+import AppChip from 'src/shared/ui/base/AppChip.vue'
+import cardBack from 'src/assets/card-back.jpg'
 
 const props = defineProps<{
   trade: TradeCardModel
+  isDeleting?: boolean
+}>()
+
+const emit = defineEmits<{
+  (e: 'delete', tradeId: string): void
+  (e: 'open-details', trade: TradeCardModel): void
 }>()
 
 const authStore = useAuthStore()
 
-const MAX_VISIBLE = 4
+const isOwner = computed(() => props.trade.userId === authStore.userId)
+const formattedDate = computed(() =>
+  new Date(props.trade.createdAt).toLocaleDateString('pt-BR')
+)
 
-const isOwner = computed(() => {
-  return props.trade.userId === authStore.userId
+const offeringCount = computed(() => props.trade.offering.length)
+const receivingCount = computed(() => props.trade.receiving.length)
+
+const offeringJustify = computed(() =>
+  offeringCount.value <= 1 ? 'center' : 'flex-start'
+)
+const receivingJustify = computed(() =>
+  receivingCount.value <= 1 ? 'center' : 'flex-start'
+)
+
+const MAX_THUMBS = 3
+const offeringThumbs = computed(() => props.trade.offering.slice(0, MAX_THUMBS))
+const receivingThumbs = computed(() => props.trade.receiving.slice(0, MAX_THUMBS))
+
+const offeringOverflow = computed(() => Math.max(0, offeringCount.value - MAX_THUMBS))
+const receivingOverflow = computed(() => Math.max(0, receivingCount.value - MAX_THUMBS))
+
+function openDetails() {
+  emit('open-details', props.trade)
+}
+
+const cardRef = ref<HTMLElement | ComponentPublicInstance | null>(null)
+const isInView = ref(false)
+let io: IntersectionObserver | null = null
+
+function getObservedEl(): HTMLElement | null {
+  const v = cardRef.value
+  if (!v) return null
+  if (v instanceof HTMLElement) return v
+  const el = v?.$el
+  return el instanceof HTMLElement ? el : null
+}
+
+function triggerFlip() {
+  if (isInView.value) return
+
+  const reduce =
+    typeof window !== 'undefined' &&
+    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+
+  if (reduce) {
+    isInView.value = true
+    return
+  }
+
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      isInView.value = true
+    }, 70)
+  })
+}
+
+onMounted(() => {
+  setTimeout(() => {
+    triggerFlip()
+  }, 900)
 })
 
-const formattedDate = computed(() => {
-  return new Date(props.trade.createdAt).toLocaleDateString()
+watchEffect(() => {
+  const el = getObservedEl()
+  if (!el) return
+
+  if (typeof IntersectionObserver === 'undefined') {
+    triggerFlip()
+    return
+  }
+
+  io?.disconnect()
+  io = new IntersectionObserver(
+    (entries) => {
+      const entry = entries[0]
+      if (!entry) return
+      if (entry.isIntersecting) {
+        triggerFlip()
+        io?.disconnect()
+      }
+    },
+    { threshold: 0.25 }
+  )
+
+  io.observe(el)
 })
 
-const visibleOffering = computed(() =>
-  props.trade.offering.slice(0, MAX_VISIBLE)
-)
-
-const visibleReceiving = computed(() =>
-  props.trade.receiving.slice(0, MAX_VISIBLE)
-)
-
-const offeringOverflow = computed(() =>
-  props.trade.offering.length - MAX_VISIBLE
-)
-
-const receivingOverflow = computed(() =>
-  props.trade.receiving.length - MAX_VISIBLE
-)
-
-const emit = defineEmits<{
-  (e: 'delete', tradeId: string): void
-}>()
+onBeforeUnmount(() => {
+  io?.disconnect()
+})
 </script>
 
 <template>
-  <AppCard class="trade-card">
-
-    <!-- HEADER -->
+  <AppCard ref="cardRef" class="trade-card" clickable role="button" tabindex="0" @click="openDetails">
     <div class="trade-header">
-      <div>
-        <div class="trade-user">
-          {{ trade.userName }}
-        </div>
-        <div class="trade-date">
-          {{ formattedDate }}
-        </div>
+      <div class="meta">
+        <div class="user">{{ trade.userName }}</div>
+        <div class="date">{{ formattedDate }}</div>
       </div>
 
-      <q-btn v-if="isOwner" icon="delete" flat round dense size="sm" color="negative"
-        @click="emit('delete', trade.id)" />
+      <div class="right">
+        <AppChip size="sm" label="Oferecendo" variant="primary" />
+        <AppChip size="sm" label="Recebendo" variant="info" />
+
+        <AppIconButton v-if="isOwner" icon="delete" variant="danger" size="sm" :loading="!!isDeleting"
+          :disabled="!!isDeleting" aria-label="Cancelar troca" @click.stop="emit('delete', trade.id)" />
+      </div>
     </div>
 
-    <!-- BODY -->
-    <div class="trade-body">
-
-      <!-- OFFERING -->
-      <div class="trade-column">
-        <div class="column-label">
-          Offering
+    <div class="summary">
+      <div class="side">
+        <div class="side-head">
+          <div class="side-title">OFERECENDO</div>
+          <div class="side-count">{{ offeringCount }}</div>
         </div>
 
-        <div class="cards-row">
-          <CardItem v-for="(card, index) in visibleOffering" :key="card.id" :card="card" :index="index"
-            :selectable="false" />
-
-          <div v-if="offeringOverflow > 0" class="overflow-indicator">
-            +{{ offeringOverflow }}
+        <div class="thumb-row" aria-hidden="true" :style="{ justifyContent: offeringJustify }">
+          <div v-for="(c, idx) in offeringThumbs" :key="c.id" class="thumb flip" :class="{ 'is-flipped': isInView }"
+            :style="{ transitionDelay: `${(idx * 90) + 120}ms` }">
+            <div class="flip-inner">
+              <div class="flip-face flip-back">
+                <img :src="cardBack" alt="" />
+              </div>
+              <div class="flip-face flip-front">
+                <img :src="c.imageUrl" :alt="c.name" />
+              </div>
+            </div>
           </div>
+
+          <div v-if="offeringOverflow > 0" class="more-pill">+{{ offeringOverflow }}</div>
         </div>
       </div>
 
-      <!-- ARROW -->
-      <div class="trade-divider">
-        ⇄
+      <div class="mid" aria-hidden="true">
+        <div class="mid-icon">⇄</div>
+        <div class="mid-line" />
       </div>
 
-      <!-- RECEIVING -->
-      <div class="trade-column">
-        <div class="column-label receiving">
-          Receiving
+      <div class="side">
+        <div class="side-head">
+          <div class="side-title receiving">RECEBENDO</div>
+          <div class="side-count">{{ receivingCount }}</div>
         </div>
 
-        <div class="cards-row">
-          <CardItem v-for="(card, index) in visibleReceiving" :key="card.id" :card="card" :index="index"
-            :selectable="false" />
-
-          <div v-if="receivingOverflow > 0" class="overflow-indicator">
-            +{{ receivingOverflow }}
+        <div class="thumb-row" aria-hidden="true" :style="{ justifyContent: receivingJustify }">
+          <div v-for="(c, idx) in receivingThumbs" :key="c.id" class="thumb flip" :class="{ 'is-flipped': isInView }"
+            :style="{ transitionDelay: `${(idx * 90) + 120}ms` }">
+            <div class="flip-inner">
+              <div class="flip-face flip-back">
+                <img :src="cardBack" alt="" />
+              </div>
+              <div class="flip-face flip-front">
+                <img :src="c.imageUrl" :alt="c.name" />
+              </div>
+            </div>
           </div>
+
+          <div v-if="receivingOverflow > 0" class="more-pill">+{{ receivingOverflow }}</div>
         </div>
       </div>
-
     </div>
 
+    <div class="hint">Toque para ver os detalhes da troca</div>
   </AppCard>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .trade-card {
-  padding: 18px 20px;
+  padding: 16px 18px;
+  cursor: pointer;
 }
 
 .trade-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  gap: 16px;
+  margin-bottom: 14px;
 }
 
-.trade-user {
-  font-weight: 600;
+.meta .user {
+  font-weight: 800;
   font-size: 15px;
   color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
 }
 
-.trade-date {
+.meta .date {
+  margin-top: 2px;
   font-size: 12px;
   color: var(--text-secondary);
-  margin-top: 2px;
 }
 
-.trade-body {
+.right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.summary {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  gap: 24px;
+  grid-template-columns: minmax(0, 1fr) 74px minmax(0, 1fr);
   align-items: start;
 }
 
-.trade-column {
+.side {
+  min-width: 0;
+}
+
+.side-head {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 10px;
 }
 
-.column-label {
+.side-title {
   font-size: 11px;
-  text-transform: uppercase;
   letter-spacing: 1px;
-  font-weight: 600;
-  color: var(--text-secondary);
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.62);
 }
 
-.column-label.receiving {
-  color: var(--primary);
+.side-title.receiving {
+  color: rgba(30, 144, 255, 0.9);
 }
 
-.trade-divider {
-  align-self: center;
-  font-size: 20px;
-  opacity: 0.5;
+.side-count {
+  font-size: 12px;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.52);
 }
 
-/* REDUZ Tamanho Visual das Cartas */
-.cards-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-  gap: 10px;
-}
-
-.cards-row :deep(.card-entry) {
-  transform: scale(0.85);
-  transform-origin: top left;
-}
-
-/* Indicador +X */
-.overflow-indicator {
-  width: 100px;
-  height: 140px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.04);
+.thumb-row {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: 18px;
-  color: var(--text-secondary);
+  gap: 10px;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  min-width: 0;
+  height: 92px;
+  padding: 2px 0;
+}
+
+.thumb {
+  flex: 0 0 auto;
+  width: 56px;
+  height: 84px;
+}
+
+.flip {
+  perspective: 900px;
+}
+
+.flip-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transform: rotateY(0deg);
+  transition: transform 1200ms var(--ease-smooth, ease);
+  will-change: transform;
+}
+
+.flip-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.flip-face img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+.flip-back {
+  transform: rotateY(0deg);
+}
+
+.flip-front {
+  transform: rotateY(180deg);
+}
+
+.flip.is-flipped .flip-inner {
+  transform: rotateY(180deg);
+}
+
+.trade-card:hover .flip-face {
+  filter: brightness(1.04);
+}
+
+.more-pill {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 0;
+
+  padding: 8px 10px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 12px;
+
+  background: rgba(15, 15, 26, 0.74);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+  white-space: nowrap;
+}
+
+.mid {
+  position: relative;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  padding-top: 22px;
+}
+
+.mid-icon {
+  font-size: 20px;
+  opacity: 0.8;
+  color: rgba(138, 43, 226, 0.95);
+  filter: drop-shadow(0 0 16px rgba(138, 43, 226, 0.18));
+}
+
+.mid-line {
+  position: absolute;
+  width: 2px;
+  height: 130px;
+  background: linear-gradient(to bottom,
+      rgba(255, 255, 255, 0.04),
+      rgba(138, 43, 226, 0.22),
+      rgba(255, 255, 255, 0.04));
+  opacity: 0.7;
+}
+
+.hint {
+  margin-top: 12px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flip-inner {
+    transition: none !important;
+  }
+}
+
+@media (max-width: 740px) {
+  .summary {
+    grid-template-columns: 1fr;
+  }
+
+  .mid {
+    display: none;
+  }
+
+  .thumb {
+    width: 52px;
+    height: 78px;
+  }
+
+  .thumb-row {
+    justify-content: center !important;
+  }
+
+  .meta .user {
+    max-width: 100px;
+  }
 }
 </style>

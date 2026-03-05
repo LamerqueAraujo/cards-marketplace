@@ -157,6 +157,7 @@ onMounted(() => {
 }
 
 .card-tilt {
+  position: relative;
   width: 100%;
   height: 100%;
   transform-style: preserve-3d;
@@ -168,7 +169,6 @@ onMounted(() => {
 
   outline: none;
   will-change: transform;
-
   cursor: default;
 }
 
@@ -176,7 +176,7 @@ onMounted(() => {
   cursor: pointer;
 }
 
-.card-tilt:focus-visible {
+.card-entry:focus-visible .card-tilt {
   box-shadow:
     var(--shadow-card-base),
     0 0 0 2px var(--focus-ring),
@@ -216,11 +216,21 @@ onMounted(() => {
 
 .card-entry.selected .card-tilt {
   animation: selectedPulse 1.4s var(--ease-smooth) infinite;
-  transform: scale(1.06);
+
   box-shadow:
-    0 0 0 3px rgba(139, 92, 246, 0.55),
-    0 0 28px rgba(139, 92, 246, 0.22),
-    0 30px 55px rgba(0, 0, 0, 0.78);
+    0 30px 55px rgba(0, 0, 0, 0.78),
+    0 0 28px rgba(139, 92, 246, 0.18);
+}
+
+.card-entry.selected .card-tilt::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+
+  box-shadow:
+    inset 0 0 0 3px rgba(139, 92, 246, 0.65),
+    inset 0 0 0 7px rgba(139, 92, 246, 0.12);
 }
 
 .selection-overlay {

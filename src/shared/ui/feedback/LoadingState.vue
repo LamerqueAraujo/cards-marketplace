@@ -50,7 +50,6 @@ withDefaults(defineProps<{
 
 .ds-loading__skeleton {
   aspect-ratio: 421 / 614;
-  border-radius: var(--radius-lg);
   border: 1px solid var(--surface-border);
   background: rgba(255, 255, 255, 0.045);
   overflow: hidden;

@@ -6,9 +6,12 @@ import { useAuthStore } from 'src/modules/auth/store/auth.store'
 export function useHomeMarketplace() {
   const router = useRouter()
   const authStore = useAuthStore()
+
   const { trades, loading, error, fetchTrades } = useTrades()
+
   const isAuthenticated = computed(() => Boolean(authStore.token))
   const limitedTrades = computed(() => trades.value.slice(0, 6))
+
   const subtitle = computed(() =>
     isAuthenticated.value
       ? 'Explore trocas abertas e negocie com estratégia'
@@ -17,7 +20,14 @@ export function useHomeMarketplace() {
 
   const createTradeOpen = ref(false)
 
-  function goTrades() { void router.push({ name: 'trades' }) }
+  function goTrades(tradeId?: string) {
+    const to = tradeId
+      ? { name: 'trades', query: { trade: tradeId } }
+      : { name: 'trades' }
+
+    void router.push(to)
+  }
+
   function goLogin() { void router.push({ name: 'login' }) }
   function goRegister() { void router.push({ name: 'register' }) }
   function goMyCards() { void router.push({ name: 'my-cards' }) }
@@ -31,11 +41,11 @@ export function useHomeMarketplace() {
   }
 
   function onTradeCreated() {
-    void fetchTrades(true)
+    void fetchTrades({ reset: true, silent: true })
   }
 
   onMounted(() => {
-    void fetchTrades(true)
+    void fetchTrades({ reset: true, silent: true })
   })
 
   return {
