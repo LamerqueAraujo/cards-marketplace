@@ -146,6 +146,7 @@ onMounted(() => {
   overflow-y: auto;
   padding-right: 6px;
   max-height: none;
+  scrollbar-gutter: stable;
 }
 
 @media (max-width: 700px) {
@@ -156,10 +157,6 @@ onMounted(() => {
 
   .app-myCards__btn {
     width: 100%;
-  }
-
-  .add-dialog__scroll {
-    max-height: 64vh;
   }
 }
 </style>

@@ -167,6 +167,10 @@ function close() {
   background: rgba(0, 0, 0, 0.22);
 }
 
+:deep(.dialog-footer) {
+  padding-bottom: calc(var(--space-5) + env(safe-area-inset-bottom));
+}
+
 @media (max-width: 599px) {
   .dialog-header {
     padding: var(--space-4);
