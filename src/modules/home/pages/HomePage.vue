@@ -51,7 +51,7 @@ const {
             </div>
 
             <div class="app-home__heroActions">
-              <AppButton label="Ver todas as trocas" icon="swap_horiz" @click="goTrades" />
+              <AppButton label="Ver todas as trocas" icon="swap_horiz" @click="() => goTrades()" />
             </div>
           </div>
 
@@ -82,7 +82,7 @@ const {
           </div>
 
           <div class="app-home__sectionActions">
-            <AppButton label="Ver todas" icon="swap_horiz" variant="ghost" @click="goTrades" />
+            <AppButton label="Ver todas" icon="swap_horiz" variant="ghost" @click="() => goTrades()" />
           </div>
         </header>
 
@@ -100,7 +100,7 @@ const {
           description="Volte em alguns minutos — novas trocas podem aparecer a qualquer momento." />
 
         <div v-else class="app-home__grid">
-          <TradeCard v-for="trade in trades" :key="trade.id" :trade="trade" />
+          <TradeCard v-for="trade in trades" :key="trade.id" :trade="trade" @open-details="(t) => goTrades(t.id)" />
         </div>
 
         <ErrorState v-if="error && trades.length > 0" title="Algumas trocas não puderam ser carregadas"

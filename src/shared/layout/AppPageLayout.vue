@@ -1,17 +1,20 @@
 <script setup lang="ts">
-withDefaults(defineProps<{
-  title: string
-  subtitle?: string
-  maxWidth?: 'md' | 'lg' | 'xl'
-  hideHeader?: boolean
-}>(), {
-  maxWidth: 'xl',
-  hideHeader: false
-})
+withDefaults(
+  defineProps<{
+    title: string
+    subtitle?: string
+    maxWidth?: 'md' | 'lg' | 'xl'
+    hideHeader?: boolean
+  }>(),
+  {
+    maxWidth: 'xl',
+    hideHeader: false,
+  }
+)
 </script>
 
 <template>
-  <q-page class="app-page">
+  <div class="app-page">
     <div v-if="!hideHeader" class="app-page__header">
       <div class="app-page__shell" :class="`app-page__shell--${maxWidth}`">
         <div class="app-page__headerRow">
@@ -37,10 +40,11 @@ withDefaults(defineProps<{
     <div class="app-page__shell app-page__content" :class="`app-page__shell--${maxWidth}`">
       <slot />
     </div>
-  </q-page>
+  </div>
 </template>
 
 <style scoped lang="scss">
+/* seu CSS permanece igual */
 .app-page {
   display: flex;
   flex-direction: column;

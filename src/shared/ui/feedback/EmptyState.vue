@@ -30,16 +30,12 @@ withDefaults(defineProps<{
   margin: 0 auto;
   padding: var(--space-6);
   text-align: center;
-
   border: 1px solid var(--surface-border);
-  border-radius: var(--radius-lg);
   background: var(--surface-2);
   backdrop-filter: blur(10px);
-
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
 }
 
-/* Empty variant */
 .ds-state--empty {
   box-shadow:
     0 12px 30px rgba(0, 0, 0, 0.25),

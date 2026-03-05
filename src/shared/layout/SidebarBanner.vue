@@ -37,7 +37,6 @@ const emit = defineEmits<{ (e: 'close'): void }>()
   gap: var(--space-3);
   top: 7px;
   padding: 12px 12px;
-  border-radius: 16px;
 
   /* “capsule glass” igual o resto */
   background: linear-gradient(135deg,
