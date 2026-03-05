@@ -44,7 +44,6 @@ withDefaults(
 </template>
 
 <style scoped lang="scss">
-/* seu CSS permanece igual */
 .app-page {
   display: flex;
   flex-direction: column;

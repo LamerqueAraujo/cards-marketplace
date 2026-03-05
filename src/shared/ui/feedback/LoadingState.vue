@@ -56,7 +56,6 @@ withDefaults(defineProps<{
   position: relative;
 }
 
-/* Subtle shimmer (premium, not noisy) */
 .ds-loading__skeleton::after {
   content: "";
   position: absolute;
@@ -79,7 +78,6 @@ withDefaults(defineProps<{
   }
 }
 
-/* Reduce motion */
 @media (prefers-reduced-motion: reduce) {
   .ds-loading__skeleton::after {
     animation: none;

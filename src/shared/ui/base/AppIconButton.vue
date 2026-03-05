@@ -66,7 +66,6 @@ const variantClass = computed(() => `app-icon-btn--${props.variant}`)
   filter: brightness(1.06);
 }
 
-/* sizes */
 .app-icon-btn--sm {
   width: 30px;
   height: 30px;
@@ -82,7 +81,6 @@ const variantClass = computed(() => `app-icon-btn--${props.variant}`)
   height: 42px;
 }
 
-/* variants */
 .app-icon-btn--default {
   background: rgba(255, 255, 255, 0.04);
 }

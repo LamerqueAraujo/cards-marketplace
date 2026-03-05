@@ -67,7 +67,6 @@ function onClick(ev: Event) {
     filter 220ms var(--ease-smooth);
 }
 
-/* glow layer (bem sutil) */
 .app-card::before {
   content: "";
   position: absolute;

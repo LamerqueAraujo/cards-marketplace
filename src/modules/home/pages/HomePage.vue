@@ -297,8 +297,7 @@ const {
     width: 100%;
     display: grid;
     grid-template-columns: 1fr;
-    /* um por linha */
-    gap: var(--space-3);
+        gap: var(--space-3);
     justify-items: center;
   }
 

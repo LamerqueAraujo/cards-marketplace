@@ -9,7 +9,7 @@ describe('fetchWithCache', () => {
   })
 
   it('dedupes concurrent calls (inFlight)', async () => {
-    const fetcher = vi.fn(async () => 'OK')
+    const fetcher = vi.fn().mockResolvedValue('OK')
 
     const p1 = fetchWithCache('k', fetcher, { ttlMs: 1000, tags: ['t'] })
     const p2 = fetchWithCache('k', fetcher, { ttlMs: 1000, tags: ['t'] })
@@ -22,7 +22,7 @@ describe('fetchWithCache', () => {
   })
 
   it('returns cached value within ttl', async () => {
-    const fetcher = vi.fn(async () => 'A')
+    const fetcher = vi.fn().mockResolvedValue('A')
 
     const r1 = await fetchWithCache('k', fetcher, { ttlMs: 1000 })
     expect(r1).toBe('A')
@@ -34,7 +34,7 @@ describe('fetchWithCache', () => {
   })
 
   it('refetches after ttl expires', async () => {
-    const fetcher = vi.fn(async () => 'A')
+    const fetcher = vi.fn().mockResolvedValue('A')
 
     const r1 = await fetchWithCache('k', fetcher, { ttlMs: 1000 })
     expect(r1).toBe('A')

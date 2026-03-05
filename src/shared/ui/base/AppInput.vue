@@ -60,7 +60,6 @@ const emit = defineEmits<{
   color: rgba(255, 255, 255, 0.78);
 }
 
-/* hint + error */
 .app-input :deep(.q-field__bottom) {
   padding-top: 6px;
 }
