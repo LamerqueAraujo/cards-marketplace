@@ -136,15 +136,16 @@ onMounted(() => {
 .add-dialog {
   display: flex;
   flex-direction: column;
+  height: 100%;
   min-height: 0;
 }
 
 .add-dialog__scroll {
-  overflow-y: scroll;
-  scrollbar-gutter: stable;
-
-  max-height: min(62vh, 640px);
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
   padding-right: 6px;
+  max-height: none;
 }
 
 @media (max-width: 700px) {

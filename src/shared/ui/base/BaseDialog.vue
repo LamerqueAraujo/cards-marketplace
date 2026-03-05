@@ -128,10 +128,11 @@ function close() {
   padding: var(--space-6);
 }
 
-
 .dialog-scroller {
   height: 100%;
   min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .base-dialog--no-body-scroll .dialog-scroller {
