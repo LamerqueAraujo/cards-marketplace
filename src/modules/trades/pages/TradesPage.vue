@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from 'src/modules/auth/store/auth.store'
+
 import AppPageLayout from 'src/shared/layout/AppPageLayout.vue'
 import AppButton from 'src/shared/ui/base/AppButton.vue'
 import AppCard from 'src/shared/ui/base/AppCard.vue'
@@ -8,6 +10,7 @@ import LoadingState from 'src/shared/ui/feedback/LoadingState.vue'
 import ErrorState from 'src/shared/ui/feedback/ErrorState.vue'
 import EmptyState from 'src/shared/ui/feedback/EmptyState.vue'
 import ConfirmDialog from 'src/shared/ui/dialogs/ConfirmDialog.vue'
+
 import TradeCard from '../components/TradeCard.vue'
 import TradeCreateDialog from '../components/TradeCreateDialog.vue'
 import TradeDetailsDialog from '../components/TradeDetailsDialog.vue'
@@ -16,6 +19,7 @@ import type { TradeCardModel } from '../types/trade-card.model.types'
 
 const route = useRoute()
 const router = useRouter()
+const authStore = useAuthStore()
 
 const showCreateTradeDialog = ref(false)
 
@@ -25,23 +29,31 @@ const selectedTrade = ref<TradeCardModel | null>(null)
 const confirmDeleteOpen = ref(false)
 const pendingDeleteId = ref<string | null>(null)
 
+const showOnlyMine = ref(false)
+
 const {
   trades,
-  loading: loadingList,
+  myTrades,
+  loadingList,
   loadingMore,
+  loadingMine,
   error,
   hasMore,
   loadMore,
   deleteTradeById,
   fetchTrades,
+  fetchMyTrades,
   deletingById,
 } = useTrades()
+
+const listToRender = computed(() => (showOnlyMine.value ? myTrades.value : trades.value))
 
 function openCreateTradeDialog() {
   showCreateTradeDialog.value = true
 }
 
 function onCreatedTrade() {
+  showOnlyMine.value = false
   void fetchTrades({ reset: true })
 }
 
@@ -94,10 +106,10 @@ function clearTradeQuery() {
 function tryOpenFromQuery() {
   const tradeId = normalizeTradeQuery(route.query.trade)
   if (!tradeId) return false
-  if (loadingList.value) return false
-  if (!trades.value.length) return false
+  if (loadingList.value || loadingMine.value) return false
+  if (!listToRender.value.length) return false
 
-  const found = trades.value.find(t => t.id === tradeId)
+  const found = listToRender.value.find(t => t.id === tradeId)
   if (!found) return false
 
   selectedTrade.value = found
@@ -106,12 +118,23 @@ function tryOpenFromQuery() {
   return true
 }
 
+async function toggleMine() {
+  showOnlyMine.value = !showOnlyMine.value
+  closeDetails()
+
+  if (showOnlyMine.value) {
+    await fetchMyTrades({ silent: true })
+  } else {
+    void fetchTrades({ reset: true, silent: true })
+  }
+}
+
 onMounted(() => {
   void fetchTrades({ reset: true })
 })
 
 watch(
-  [() => route.query.trade, () => trades.value.length, () => loadingList.value],
+  [() => route.query.trade, () => listToRender.value.length, () => loadingList.value, () => loadingMine.value],
   () => {
     void tryOpenFromQuery()
   },
@@ -123,20 +146,31 @@ watch(
   <AppPageLayout title="Trocas" subtitle="Explore as trocas disponíveis ou crie a sua própria troca!" icon="swap_horiz">
     <template #actions>
       <AppButton label="Criar troca" icon="add" @click="openCreateTradeDialog" />
+
+      <AppButton v-if="authStore.userId" :label="showOnlyMine ? 'Mostrar todas' : 'Minhas trocas ativas'"
+        icon="filter_list" variant="ghost" :class="{ 'btn-active': showOnlyMine }"
+        :loading="showOnlyMine && loadingMine" @click="toggleMine" />
     </template>
 
-    <LoadingState v-if="loadingList && trades.length === 0" type="grid" />
+    <div v-if="showOnlyMine" class="mode-pill">
+      Mostrando: <strong>Minhas trocas ativas</strong>
+    </div>
+
+    <LoadingState
+      v-if="(loadingList && trades.length === 0 && !showOnlyMine) || (showOnlyMine && loadingMine && myTrades.length === 0)"
+      type="grid" />
 
     <ErrorState v-else-if="error" :title="error" />
 
-    <EmptyState v-else-if="trades.length === 0" icon="swap_horiz" title="Nenhuma troca disponível"
-      description="Seja o primeiro a criar uma troca." />
+    <EmptyState v-else-if="listToRender.length === 0" icon="swap_horiz"
+      :title="showOnlyMine ? 'Você não tem trocas ativas' : 'Nenhuma troca disponível'"
+      :description="showOnlyMine ? 'Crie uma troca para ela aparecer aqui.' : 'Seja o primeiro a criar uma troca.'" />
 
     <div v-else class="trade-grid">
-      <TradeCard v-for="trade in trades" :key="trade.id" :trade="trade" :is-deleting="!!deletingById[trade.id]"
+      <TradeCard v-for="trade in listToRender" :key="trade.id" :trade="trade" :is-deleting="!!deletingById[trade.id]"
         @delete="requestDelete" @open-details="onOpenDetails" />
 
-      <AppCard v-if="hasMore" class="load-more-card">
+      <AppCard v-if="hasMore && !showOnlyMine" class="load-more-card">
         <div class="load-more-content">
           <div class="load-more-text">
             <div class="load-more-title">Carregar mais</div>
@@ -161,6 +195,24 @@ watch(
 </template>
 
 <style scoped>
+.mode-pill {
+  margin-top: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(139, 92, 246, 0.22);
+  background: rgba(139, 92, 246, 0.10);
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 12px;
+}
+
+.btn-active {
+  border-color: rgba(139, 92, 246, 0.35) !important;
+  box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.18), 0 10px 30px rgba(139, 92, 246, 0.08);
+}
+
 .trade-grid {
   margin-top: 18px;
   display: grid;

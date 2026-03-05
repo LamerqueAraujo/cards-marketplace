@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { login } from '../services/auth.service'
 import { useAuthStore } from '../store/auth.store'
+import { useToast } from 'src/shared/ui/notification/composables/useToast'
 
 import AppInput from 'src/shared/ui/base/AppInput.vue'
 import AppButton from 'src/shared/ui/base/AppButton.vue'
@@ -11,6 +12,7 @@ import AuthCard from '../components/AuthCard.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const toast = useToast()
 
 const email = ref('')
 const password = ref('')
@@ -18,38 +20,31 @@ const loading = ref(false)
 const errorMessage = ref('')
 const isFocused = ref(false)
 
-function onFocus() {
-  isFocused.value = true
-}
-
-function onBlur() {
-  isFocused.value = false
-}
+function onFocus() { isFocused.value = true }
+function onBlur() { isFocused.value = false }
 
 async function onSubmit() {
   if (!email.value || !password.value) return
-
   try {
     loading.value = true
     errorMessage.value = ''
 
-    const response = await login({
-      email: email.value,
-      password: password.value
-    })
-
+    const response = await login({ email: email.value, password: password.value })
     authStore.setSession({
       token: response.token,
       userId: response.user.id,
       name: response.user.name,
       email: response.user.email
     })
+    toast.success('Login realizado com sucesso.')
     await router.push({ name: 'home' })
   } catch (error: unknown) {
     if (error instanceof Error && error.message === 'INVALID_CREDENTIALS') {
       errorMessage.value = 'Email ou senha inválidos'
+      toast.error('Email ou senha inválidos.')
     } else {
       errorMessage.value = 'Erro ao fazer login. Tente novamente.'
+      toast.error('Erro ao fazer login. Tente novamente.')
     }
   } finally {
     loading.value = false

@@ -6,6 +6,7 @@ import LoadingState from 'src/shared/ui/feedback/LoadingState.vue'
 import ErrorState from 'src/shared/ui/feedback/ErrorState.vue'
 import EmptyState from 'src/shared/ui/feedback/EmptyState.vue'
 import CreateTradeDialog from 'src/modules/trades/components/TradeCreateDialog.vue'
+import TradeDetailsDialog from 'src/modules/trades/components/TradeDetailsDialog.vue'
 import TradeCard from 'src/modules/trades/components/TradeCard.vue'
 import { useHomeMarketplace } from '../composables/useHomeMarketplace'
 
@@ -22,7 +23,11 @@ const {
   goMyCards,
   goCreateTrade,
   createTradeOpen,
-  onTradeCreated
+  onTradeCreated,
+  detailsOpen,
+  selectedTrade,
+  openTradeDetails,
+  closeTradeDetails,
 } = useHomeMarketplace()
 </script>
 
@@ -100,7 +105,7 @@ const {
           description="Volte em alguns minutos — novas trocas podem aparecer a qualquer momento." />
 
         <div v-else class="app-home__grid">
-          <TradeCard v-for="trade in trades" :key="trade.id" :trade="trade" @open-details="(t) => goTrades(t.id)" />
+          <TradeCard v-for="trade in trades" :key="trade.id" :trade="trade" @open-details="openTradeDetails" />
         </div>
 
         <ErrorState v-if="error && trades.length > 0" title="Algumas trocas não puderam ser carregadas"
@@ -111,12 +116,15 @@ const {
         </ErrorState>
       </section>
     </div>
+
     <CreateTradeDialog v-model="createTradeOpen" @created="onTradeCreated" />
+
+    <TradeDetailsDialog v-model="detailsOpen" :trade="selectedTrade"
+      @update:modelValue="(v) => !v && closeTradeDetails()" />
   </AppPageLayout>
 </template>
 
 <style scoped lang="scss">
-/* page wrapper */
 .app-home {
   display: flex;
   flex-direction: column;

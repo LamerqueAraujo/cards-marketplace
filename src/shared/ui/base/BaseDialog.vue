@@ -44,7 +44,7 @@ function close() {
     <AppCard class="base-dialog" padding="none" variant="elevated" :class="[
       { 'base-dialog--mobile': isMobile },
       { 'base-dialog--no-body-scroll': !bodyScrollable }
-    ]" :style="isMobile ? undefined : { width: props.width, maxHeight: props.maxHeight }">
+    ]" :style="isMobile ? undefined : { width: props.width, height: props.maxHeight }">
       <div v-if="title || subtitle || $slots.header || showClose" class="dialog-header">
         <div class="dialog-titles">
           <slot name="header">
@@ -77,6 +77,11 @@ function close() {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+.dialog-header,
+.dialog-footer {
+  flex: 0 0 auto;
 }
 
 .base-dialog--mobile {
@@ -117,17 +122,21 @@ function close() {
 }
 
 .dialog-body {
-  flex: 1;
+  flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
   padding: var(--space-6);
 }
 
+
 .dialog-scroller {
   height: 100%;
   min-height: 0;
-  overflow: auto;
-  padding-right: 6px;
+}
+
+.base-dialog--no-body-scroll .dialog-scroller {
+  overflow: hidden;
+  padding-right: 0;
 }
 
 .app-scroll::-webkit-scrollbar {

@@ -37,10 +37,19 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useToastStore } from '../stores/toast.store'
 import type { ToastVariant } from '../types/toast.types'
+
+type ToastLike = {
+  id: string
+  variant: ToastVariant
+  title?: string
+  message: string
+  createdAt: number
+  duration: number
+}
 
 const store = useToastStore()
 const { toasts } = storeToRefs(store)
@@ -62,10 +71,13 @@ function clearAll() {
   store.clear()
 }
 
-function progressStyle(t: { createdAt: number; duration: number }) {
-  const elapsed = Math.max(0, Date.now() - t.createdAt)
-  const pct = Math.min(100, (elapsed / t.duration) * 100)
-  return { width: `${100 - pct}%` }
+const now = ref(Date.now())
+let tick: number | null = null
+
+function progressStyle(t: ToastLike) {
+  const elapsed = Math.max(0, now.value - t.createdAt)
+  const pct = Math.min(1, elapsed / Math.max(1, t.duration))
+  return { width: `${Math.max(0, (1 - pct) * 100)}%` }
 }
 
 const pointerState = ref<Record<string, { x: number; y: number; active: boolean }>>({})
@@ -100,14 +112,14 @@ function onPointerCancel(id: string) {
 
 onMounted(() => {
   hostRef.value?.focus()
-  const tick = window.setInterval(() => {
-    if (toasts.value.length) {
-      // força recalcular a progress bar via re-render mínimo
-      // (não mexe na store)
-    }
-  }, 120)
 
-  window.addEventListener('beforeunload', () => window.clearInterval(tick), { once: true })
+  tick = window.setInterval(() => {
+    if (toasts.value.length) now.value = Date.now()
+  }, 120)
+})
+
+onBeforeUnmount(() => {
+  if (tick) window.clearInterval(tick)
 })
 </script>
 
@@ -124,7 +136,6 @@ onMounted(() => {
   position: absolute;
   top: calc(16px + env(safe-area-inset-top, 0px));
   right: calc(16px + env(safe-area-inset-right, 0px));
-
   display: grid;
   gap: 12px;
   width: min(440px, calc(100vw - 32px));
@@ -146,11 +157,7 @@ onMounted(() => {
   background: rgba(16, 16, 26, 0.74);
   border: 1px solid rgba(255, 255, 255, 0.10);
   backdrop-filter: blur(14px);
-
-  box-shadow:
-    0 18px 50px rgba(0, 0, 0, 0.42),
-    0 0 24px rgba(139, 92, 246, 0.16);
-
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.42), 0 0 24px rgba(139, 92, 246, 0.16);
   overflow: hidden;
 }
 
@@ -160,18 +167,12 @@ onMounted(() => {
   border-radius: 14px;
   pointer-events: none;
   opacity: 0.85;
-
   background:
     radial-gradient(circle at 20% 0%, rgba(139, 92, 246, 0.28), transparent 60%),
     radial-gradient(circle at 90% 30%, rgba(30, 144, 255, 0.16), transparent 55%),
     linear-gradient(to right, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.00));
-
-  mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   padding: 1px;
   box-sizing: border-box;
 }
@@ -254,30 +255,21 @@ onMounted(() => {
 }
 
 .toast--success {
-  box-shadow:
-    0 18px 50px rgba(0, 0, 0, 0.42),
-    0 0 28px rgba(34, 139, 34, 0.18);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.42), 0 0 28px rgba(34, 139, 34, 0.18);
 }
 
 .toast--error {
-  box-shadow:
-    0 18px 50px rgba(0, 0, 0, 0.42),
-    0 0 28px rgba(255, 69, 0, 0.18);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.42), 0 0 28px rgba(255, 69, 0, 0.18);
 }
 
 .toast--info {
-  box-shadow:
-    0 18px 50px rgba(0, 0, 0, 0.42),
-    0 0 28px rgba(30, 144, 255, 0.18);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.42), 0 0 28px rgba(30, 144, 255, 0.18);
 }
 
 .toast--warning {
-  box-shadow:
-    0 18px 50px rgba(0, 0, 0, 0.42),
-    0 0 28px rgba(255, 215, 0, 0.16);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.42), 0 0 28px rgba(255, 215, 0, 0.16);
 }
 
-/* Transition */
 .toast-enter-from,
 .toast-leave-to {
   opacity: 0;

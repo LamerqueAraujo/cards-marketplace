@@ -9,19 +9,23 @@ export function useToast() {
   }
 
   function success(message: string, title?: string) {
-    return title ? store.push({ variant: 'success', message, title }) : store.push({ variant: 'success', message })
+    return store.push({
+      variant: 'success',
+      message,
+      ...(title ? { title } : {})
+    })
   }
 
   function error(message: string, title?: string) {
-    return title ? store.push({ variant: 'error', message, title }) : store.push({ variant: 'error', message })
+    return store.push({ variant: 'error', message, ...(title ? { title } : {}) })
   }
 
   function info(message: string, title?: string) {
-    return title ? store.push({ variant: 'info', message, title }) : store.push({ variant: 'info', message })
+    return store.push({ variant: 'info', message, ...(title ? { title } : {}) })
   }
 
   function warning(message: string, title?: string) {
-    return title ? store.push({ variant: 'warning', message, title }) : store.push({ variant: 'warning', message })
+    return store.push({ variant: 'warning', message, ...(title ? { title } : {}) })
   }
 
   function remove(id: string) {

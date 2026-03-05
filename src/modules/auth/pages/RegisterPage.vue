@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { register } from '../services/auth.service'
+import { useToast } from 'src/shared/ui/notification/composables/useToast'
 
 import AppInput from 'src/shared/ui/base/AppInput.vue'
 import AppButton from 'src/shared/ui/base/AppButton.vue'
@@ -9,15 +10,12 @@ import AppSeparator from 'src/shared/ui/base/AppSeparator.vue'
 import AuthCard from '../components/AuthCard.vue'
 
 const router = useRouter()
+const toast = useToast()
+
 const isFocused = ref(false)
+function onFocus() { isFocused.value = true }
+function onBlur() { isFocused.value = false }
 
-function onFocus() {
-  isFocused.value = true
-}
-
-function onBlur() {
-  isFocused.value = false
-}
 const name = ref('')
 const email = ref('')
 const password = ref('')
@@ -31,22 +29,25 @@ async function onSubmit() {
     loading.value = true
     errorMessage.value = ''
 
-    await register({
-      name: name.value,
-      email: email.value,
-      password: password.value
-    })
+    await register({ name: name.value, email: email.value, password: password.value })
 
+    toast.success('Conta criada! Agora faça login.')
     await router.push({ name: 'login' })
   } catch (error: unknown) {
-    if (error instanceof Error && error.message === 'EMAIL_ALREADY_EXISTS') {
+    if (isError(error) && error.message === 'EMAIL_ALREADY_EXISTS') {
       errorMessage.value = 'Email já cadastrado'
+      toast.warning('Esse email já está cadastrado.')
     } else {
       errorMessage.value = 'Erro ao cadastrar usuário'
+      toast.error('Erro ao cadastrar usuário. Tente novamente.')
     }
   } finally {
     loading.value = false
   }
+}
+
+function isError(e: unknown): e is Error {
+  return e instanceof Error
 }
 </script>
 

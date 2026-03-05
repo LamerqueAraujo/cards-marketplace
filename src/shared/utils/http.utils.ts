@@ -1,9 +1,5 @@
 import type { AxiosError } from 'axios'
 
-export function isAxiosError(error: unknown): error is AxiosError {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'isAxiosError' in error
-  )
+export function isAxiosError<T = unknown>(e: unknown): e is AxiosError<T> {
+  return typeof e === 'object' && e !== null && 'isAxiosError' in e
 }

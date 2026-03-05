@@ -2,6 +2,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTrades } from 'src/modules/trades/composables/useTrades'
 import { useAuthStore } from 'src/modules/auth/store/auth.store'
+import type { TradeCardModel } from 'src/modules/trades/types/trade-card.model.types'
 
 export function useHomeMarketplace() {
   const router = useRouter()
@@ -19,6 +20,19 @@ export function useHomeMarketplace() {
   )
 
   const createTradeOpen = ref(false)
+
+  const detailsOpen = ref(false)
+  const selectedTrade = ref<TradeCardModel | null>(null)
+
+  function openTradeDetails(trade: TradeCardModel) {
+    selectedTrade.value = trade
+    detailsOpen.value = true
+  }
+
+  function closeTradeDetails() {
+    detailsOpen.value = false
+    selectedTrade.value = null
+  }
 
   function goTrades(tradeId?: string) {
     const to = tradeId
@@ -61,6 +75,10 @@ export function useHomeMarketplace() {
     goMyCards,
     goCreateTrade,
     createTradeOpen,
-    onTradeCreated
+    onTradeCreated,
+    detailsOpen,
+    selectedTrade,
+    openTradeDetails,
+    closeTradeDetails,
   }
 }

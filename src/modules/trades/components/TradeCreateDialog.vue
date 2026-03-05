@@ -157,7 +157,7 @@ watch(
           </div>
         </AppCard>
 
-        <div v-if="!isMobile" class="mid" aria-hidden="true">
+        <div class="mid" aria-hidden="true">
           <div class="mid-icon">⇄</div>
           <div class="mid-line" />
         </div>

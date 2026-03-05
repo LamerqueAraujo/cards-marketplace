@@ -94,9 +94,13 @@ onMounted(() => {
     </div>
 
     <BaseDialog v-model="showAddDialog" title="Adicionar cartas"
-      subtitle="Selecione cartas para adicionar ao seu inventário" width="min(1000px, 92vw)">
-      <CardGrid :cards="availableCards" :loading="loadingAvailable" :error="availableError" selectable
-        :selected-ids="selectedCardIds" :disabled-ids="ownedIds" @select="({ id }) => toggleCardSelection(id)" />
+      subtitle="Selecione cartas para adicionar ao seu inventário" width="min(1000px, 92vw)" :body-scrollable="false">
+      <div class="add-dialog">
+        <div class="add-dialog__scroll app-scroll">
+          <CardGrid :cards="availableCards" :loading="loadingAvailable" :error="availableError" selectable
+            :selected-ids="selectedCardIds" :disabled-ids="ownedIds" @select="({ id }) => toggleCardSelection(id)" />
+        </div>
+      </div>
 
       <template #footer>
         <div class="app-myCards__dialogFooter">
@@ -125,6 +129,24 @@ onMounted(() => {
   width: 100%;
 }
 
+:deep(.dialog-body) {
+  overflow: hidden !important;
+}
+
+.add-dialog {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.add-dialog__scroll {
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
+
+  max-height: min(62vh, 640px);
+  padding-right: 6px;
+}
+
 @media (max-width: 700px) {
   .app-myCards__dialogFooter {
     flex-direction: column;
@@ -133,6 +155,10 @@ onMounted(() => {
 
   .app-myCards__btn {
     width: 100%;
+  }
+
+  .add-dialog__scroll {
+    max-height: 64vh;
   }
 }
 </style>
